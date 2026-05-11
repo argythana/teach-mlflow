@@ -2452,6 +2452,7 @@ dependencies = [
     { name = "mlflow" },
     { name = "pandas" },
     { name = "scikit-learn" },
+    { name = "skops" },
 ]
 
 [package.metadata]
@@ -2460,6 +2461,7 @@ requires-dist = [
     { name = "mlflow", specifier = ">=3.12.0" },
     { name = "pandas", specifier = ">=2.3.3" },
     { name = "scikit-learn", specifier = ">=1.8.0" },
+    { name = "skops", specifier = ">=0.14.0" },
 ]
 
 [[package]]
