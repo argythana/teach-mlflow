@@ -7,10 +7,9 @@ description: >
   it is friendlier for beginner data scientists and researchers.
   Trigger on prompts like "expand this MLflow section", "explain this
   MLflow concept better", "make this notebook beginner-friendly", "what
-  context should we add to this cell", "why does this MLflow feature
-  exist", or "add a MISSING FROM THE OFFICIAL TUTORIAL section about
-  X". If the target notebook or cell is unclear, ask which one to edit
-  after routing. Do NOT use it for general Python or ML tutorial
+  context should we add to this cell", or "why does this MLflow feature
+  exist". If the target notebook or cell is unclear, ask which one to
+  edit after routing. Do NOT use it for general Python or ML tutorial
   writing outside this repo, for editing the upstream MLflow library
   itself, for non-tutorial docs in this repo (`README.md`, `CLAUDE.md`),
   or for non-teaching changes to the notebooks (file moves, dependency
@@ -93,7 +92,7 @@ names the relationship.
 
 | Label | When to use | Example |
 |---|---|---|
-| `**Bug in upstream tutorial:**` | Upstream code or claim is factually wrong or no longer runs (deprecated API, removed kwarg, incorrect statement). | `multi_class="auto"` was removed in scikit-learn 1.7; upstream's code raises `TypeError`. |
+| `**Bug in upstream tutorial:**` | Upstream code or claim is factually wrong or no longer runs (deprecated API, removed kwarg, incorrect statement). | Upstream's `mlflow.register_model(...)` snippet hardcodes a placeholder `run_id` that errors with `Run not found` on copy-paste. |
 | `**Stale in upstream tutorial:**` | Upstream is out of date but not broken: defaults shifted in a new MLflow version, help text references retired behaviour, recommended-but-not-yet-default practices. | Upstream `--backend-store-uri` help says `./mlruns`; actual MLflow 3 default is `sqlite:///mlflow.db`. |
 | `**Missing from upstream tutorial:**` | Upstream skips a prerequisite the reader needs for the code to run at all. The upstream code is fine *if* you do this first. | Upstream calls `mlflow.set_tracking_uri("http://127.0.0.1:5000")` without telling the reader to start the server first. |
 | `**Diverges from upstream tutorial:**` | Upstream is fine, but this repo deliberately does it differently as a house policy. Name the policy briefly so the reader does not infer upstream is wrong. | Upstream uses `pip install mlflow`; this repo uses `uv add mlflow` because `pyproject.toml` + `uv.lock` are the single source of truth. |
