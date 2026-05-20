@@ -83,14 +83,28 @@ blog posts or pre-3.x tutorials would be misled, add a short "what
 changed" note. Do not write a full version-history dump — only flag
 changes that affect the current step.
 
-### 6. Annotate additions, preserve upstream
+### 6. Annotate the upstream relationship with inline bold callouts
 
-- Use `## MISSING FROM THE OFFICIAL TUTORIAL` for prerequisite steps
-  upstream skipped (e.g. starting the server, picking a port).
-- Use a normal `## <Concept>` heading for conceptual deep-dives that
-  expand on what upstream mentions in passing.
-- Do not rewrite upstream prose. Leave the original markdown cells
-  recognizable and add new cells around them.
+When an addition relates to upstream content — correcting, supplementing,
+or deliberately diverging from it — open the paragraph with one of four
+**inline bold callouts**. Do not use them as heading prefixes. A
+paragraph can carry at most one label; pick the one that most accurately
+names the relationship.
+
+| Label | When to use | Example |
+|---|---|---|
+| `**Bug in upstream tutorial:**` | Upstream code or claim is factually wrong or no longer runs (deprecated API, removed kwarg, incorrect statement). | `multi_class="auto"` was removed in scikit-learn 1.7; upstream's code raises `TypeError`. |
+| `**Stale in upstream tutorial:**` | Upstream is out of date but not broken: defaults shifted in a new MLflow version, help text references retired behaviour, recommended-but-not-yet-default practices. | Upstream `--backend-store-uri` help says `./mlruns`; actual MLflow 3 default is `sqlite:///mlflow.db`. |
+| `**Missing from upstream tutorial:**` | Upstream skips a prerequisite the reader needs for the code to run at all. The upstream code is fine *if* you do this first. | Upstream calls `mlflow.set_tracking_uri("http://127.0.0.1:5000")` without telling the reader to start the server first. |
+| `**Diverges from upstream tutorial:**` | Upstream is fine, but this repo deliberately does it differently as a house policy. Name the policy briefly so the reader does not infer upstream is wrong. | Upstream uses `pip install mlflow`; this repo uses `uv add mlflow` because `pyproject.toml` + `uv.lock` are the single source of truth. |
+
+Standalone topics — additions that have no upstream counterpart at all
+(e.g. the `mlflow ui` vs `mlflow server` clarification in
+`a_setup_mlflow.ipynb`) — get a plain `## <Topic>` heading with no
+callout. Labeling them anything is performative.
+
+Do not rewrite upstream prose. Leave the original markdown cells
+recognizable and add new cells around them.
 
 ## House patterns
 
@@ -113,8 +127,13 @@ reused when they fit:
 
 1. Identify the section or concept to expand. Read the surrounding cells
    so the addition fits the flow.
-2. Decide whether this is a **prerequisite gap** (`MISSING FROM THE
-   OFFICIAL TUTORIAL`) or a **conceptual deep-dive** (regular heading).
+2. Decide the upstream relationship of the addition (see principle 6):
+   - **bug** → inline `**Bug in upstream tutorial:**` callout
+   - **stale** → inline `**Stale in upstream tutorial:**` callout
+   - **missing** → inline `**Missing from upstream tutorial:**` callout
+   - **diverges** → inline `**Diverges from upstream tutorial:**` callout
+   - **standalone topic** (no upstream counterpart) → plain `## <Topic>`
+     heading, no callout
 3. Draft the expansion in this order:
    - **Problem** — what breaks without it.
    - **Concept / definition** — one paragraph or table.
@@ -143,6 +162,13 @@ Stop and rewrite if the draft does any of these:
 - Edits notebook JSON metadata (kernelspec, execution counts,
   formatting) under the guise of "expansion". Those are not teaching
   changes and do not belong to this skill.
+- Uses `MISSING FROM THE OFFICIAL TUTORIAL` as a heading prefix on
+  additions. That convention is retired in favour of the four
+  inline-bold callouts in principle 6. Use a plain heading for
+  standalone topics; use an inline callout for upstream-relationship
+  signal.
+- Stacks multiple upstream-relationship callouts on one paragraph.
+  Pick the single label that most accurately names the relationship.
 
 ## Out of scope
 
