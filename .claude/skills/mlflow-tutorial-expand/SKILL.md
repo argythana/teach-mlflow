@@ -1,19 +1,22 @@
 ---
 name: mlflow-tutorial-expand
 description: >
-  Use this skill when working inside this MLflow teaching repository
-  (`src/official_tutorials/`) to expand, annotate, or rewrite a section
-  of an official MLflow tutorial notebook so it is friendlier for
-  beginner data scientists and researchers. Trigger on prompts like
-  "expand this section", "explain this MLflow concept better", "make
-  this beginner-friendly", "what context should we add here", "why does
-  this MLflow feature exist", or "add a MISSING FROM THE OFFICIAL
-  TUTORIAL section about X". Do NOT use it for general Python tutorial
+  Use this skill when working inside this MLflow teaching repository to
+  expand, annotate, rewrite, or draft a section — or a whole new
+  notebook — of an MLflow tutorial under `src/official_tutorials/` so
+  it is friendlier for beginner data scientists and researchers.
+  Trigger on prompts like "expand this MLflow section", "explain this
+  MLflow concept better", "make this notebook beginner-friendly", "what
+  context should we add to this cell", "why does this MLflow feature
+  exist", or "add a MISSING FROM THE OFFICIAL TUTORIAL section about
+  X". If the target notebook or cell is unclear, ask which one to edit
+  after routing. Do NOT use it for general Python or ML tutorial
   writing outside this repo, for editing the upstream MLflow library
-  itself, for adding new code examples unrelated to MLflow features, or
-  for non-teaching refactors of the notebooks (file moves, dependency
-  bumps, formatting). For dependency work use `uv-deps`; for staging the
-  resulting edits use `git-staging`.
+  itself, for non-tutorial docs in this repo (`README.md`, `CLAUDE.md`),
+  or for non-teaching changes to the notebooks (file moves, dependency
+  bumps, formatting, kernel metadata). For dependency work use
+  `uv-deps`; for staging edits use `git-staging`; for the commit message
+  use `commit-message`.
 ---
 
 # MLflow tutorial expand
@@ -137,6 +140,9 @@ Stop and rewrite if the draft does any of these:
 - Inlines reference-style content that belongs in the official docs
   (full CLI flag listings, exhaustive API tables).
 - Rewrites or paraphrases upstream cells instead of wrapping them.
+- Edits notebook JSON metadata (kernelspec, execution counts,
+  formatting) under the guise of "expansion". Those are not teaching
+  changes and do not belong to this skill.
 
 ## Out of scope
 
