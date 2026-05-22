@@ -10,5 +10,6 @@ dependencies = [
     "optuna>=4.8.0",
     "pandas>=2.3.3",
     "scikit-learn>=1.8.0",
+    "seaborn>=0.13.2",
     "skops>=0.14.0",
 ]
