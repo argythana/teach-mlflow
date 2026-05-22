@@ -119,7 +119,56 @@ get output that matches every tree, table, and snippet in the notebook
 exactly. If any tree shows a file they won't produce, fix the tree (or
 delete it).
 
-### 7. Annotate the upstream relationship with inline bold callouts
+### 7. Make code cells idempotent — re-running should not break the tutorial
+
+A tutorial reader will re-run cells: to check the output, to recover
+from a typo two cells later, to demo to a colleague, after restarting a
+kernel. A cell that errors on the second run interrupts the learning
+flow — the reader now has to debug *the tutorial* instead of the topic
+it teaches.
+
+Wherever a cell creates server-side state (an experiment, a registered
+model, a database row), wrap the creation in a guard that turns the
+"already exists" error into a no-op. Use the exception class MLflow
+already raises so the reader sees the relevant error name in the
+source:
+
+```python
+from mlflow.exceptions import RestException
+
+try:
+    mlflow.create_experiment(name=NAME, artifact_location=...)
+except RestException as e:
+    if "RESOURCE_ALREADY_EXISTS" not in str(e):
+        raise
+```
+
+Concrete checklist:
+
+- **Experiment creation** — guard `create_experiment` against
+  `RESOURCE_ALREADY_EXISTS` (above pattern), or use
+  `mlflow.set_experiment(name)` if you don't need `artifact_location`
+  / tags.
+- **Registered models** — `log_model(..., registered_model_name=...)`
+  is already idempotent in the sense that it doesn't error; it appends
+  a new version. If that's confusing, call out "version 2 on second
+  run" in the surrounding prose so the reader doesn't think something
+  broke.
+- **Run contexts** — always use `with mlflow.start_run():`. Manual
+  `start_run()` / `end_run()` pairs leak a `RUNNING` row on the next
+  exception.
+- **File writes** — `Path("...").mkdir(parents=True, exist_ok=True)`,
+  `open(..., "w")` is fine if you intend to overwrite. Tutorial cells
+  should not `raise FileExistsError` on the second run.
+- **Side-effecting setup** — `mlflow.set_tracking_uri(...)`, env-var
+  exports, `mlflow.set_experiment(...)` are all naturally idempotent;
+  prefer them over operations that aren't.
+
+The test: starting from a notebook that has been run once, Run All
+again. Every cell should either succeed silently or show the *same*
+output as the first run. No new exceptions.
+
+### 8. Annotate the upstream relationship with inline bold callouts
 
 When an addition relates to upstream content — correcting, supplementing,
 or deliberately diverging from it — open the paragraph with one of four
@@ -163,7 +212,7 @@ reused when they fit:
 
 1. Identify the section or concept to expand. Read the surrounding cells
    so the addition fits the flow.
-2. Decide the upstream relationship of the addition (see principle 7):
+2. Decide the upstream relationship of the addition (see principle 8):
    - **bug** → inline `**Bug in upstream tutorial:**` callout
    - **stale** → inline `**Stale in upstream tutorial:**` callout
    - **missing** → inline `**Missing from upstream tutorial:**` callout
@@ -200,7 +249,7 @@ Stop and rewrite if the draft does any of these:
   changes and do not belong to this skill.
 - Uses `MISSING FROM THE OFFICIAL TUTORIAL` as a heading prefix on
   additions. That convention is retired in favour of the four
-  inline-bold callouts in principle 7. Use a plain heading for
+  inline-bold callouts in principle 8. Use a plain heading for
   standalone topics; use an inline callout for upstream-relationship
   signal.
 - Stacks multiple upstream-relationship callouts on one paragraph.
@@ -212,6 +261,12 @@ Stop and rewrite if the draft does any of these:
   narrative, or downstream cells that reference variables an upstream
   cell no longer defines. See principle 6 — a tutorial is not a
   changelog.
+- Leaves a cell that raises on the second `Run All` — bare
+  `mlflow.create_experiment(...)` calls that hit
+  `RESOURCE_ALREADY_EXISTS` on re-run, file writes that fail with
+  `FileExistsError`, manual `mlflow.start_run()` without `with` that
+  leaks a `RUNNING` row on the next exception. See principle 7 — every
+  cell should be safe to run twice.
 
 ## Out of scope
 
