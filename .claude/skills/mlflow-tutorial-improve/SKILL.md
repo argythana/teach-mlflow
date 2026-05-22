@@ -168,7 +168,44 @@ The test: starting from a notebook that has been run once, Run All
 again. Every cell should either succeed silently or show the *same*
 output as the first run. No new exceptions.
 
-### 8. Annotate the upstream relationship with inline bold callouts
+### 8. Polish for readability — short lines, distinct concepts, no walls of text
+
+A tutorial cell competes for the reader's attention against everything
+else in their browser. Dense paragraphs with multiple sentences per
+line slow scanning to a crawl; the reader gives up before reaching the
+API call. Apply these rules to every prose cell longer than two
+sentences:
+
+- **Soft line breaks** (two trailing spaces + newline) between sentences
+  inside the same paragraph. Each sentence on its own line. The
+  paragraph still renders as one block, but the source reads like a
+  script — and the rendered prose has visible breath marks.
+- **One bullet per distinct sub-concept**, not one bullet per clause.
+  If a bullet would run to four full lines of prose, it is probably
+  two bullets.
+- **`**Label:**` followed by a soft break** when a bullet (or paragraph)
+  covers a distinct sub-case. The reader can skim the bold labels
+  first, then drop into the body of the one they care about.
+- **Convert run-on lists in prose to bulleted lists.**
+  "It records the run id, start time, parameters, metrics, tags, status,
+  and the user" → a bullet list of seven items.
+- **Light verbosity reduction.** Cut parenthetical asides that the
+  surrounding sentence already implies. Prefer declarative sentences
+  over hedge-stacked ones ("a process-global piece of state on the
+  client, and every subsequent `start_run()` reads from it until
+  something else changes it" → split into two sentences).
+
+What this is *not*:
+
+- **Not a wholesale rewrite.** If a paragraph is already short and
+  clear, leave it.
+- **Not a stylistic tic.** `**Label:**` blocks should land on bullets
+  that have genuinely distinct content, not every bullet.
+- **Not formatting for its own sake.** The test is whether a beginner
+  can scan the cell in ~10 seconds and know which sub-section to read
+  in full.
+
+### 9. Annotate the upstream relationship with inline bold callouts
 
 When an addition relates to upstream content — correcting, supplementing,
 or deliberately diverging from it — open the paragraph with one of four
@@ -212,7 +249,7 @@ reused when they fit:
 
 1. Identify the section or concept to expand. Read the surrounding cells
    so the addition fits the flow.
-2. Decide the upstream relationship of the addition (see principle 8):
+2. Decide the upstream relationship of the addition (see principle 9):
    - **bug** → inline `**Bug in upstream tutorial:**` callout
    - **stale** → inline `**Stale in upstream tutorial:**` callout
    - **missing** → inline `**Missing from upstream tutorial:**` callout
@@ -249,7 +286,7 @@ Stop and rewrite if the draft does any of these:
   changes and do not belong to this skill.
 - Uses `MISSING FROM THE OFFICIAL TUTORIAL` as a heading prefix on
   additions. That convention is retired in favour of the four
-  inline-bold callouts in principle 8. Use a plain heading for
+  inline-bold callouts in principle 9. Use a plain heading for
   standalone topics; use an inline callout for upstream-relationship
   signal.
 - Stacks multiple upstream-relationship callouts on one paragraph.
@@ -267,6 +304,10 @@ Stop and rewrite if the draft does any of these:
   `FileExistsError`, manual `mlflow.start_run()` without `with` that
   leaks a `RUNNING` row on the next exception. See principle 7 — every
   cell should be safe to run twice.
+- Ships prose-heavy cells as wall-of-text paragraphs: 60+ word sentences,
+  comma-separated lists embedded in running prose, multiple distinct
+  sub-topics jammed into the same bullet, no bold labels for skim. See
+  principle 8 — the reader needs visible structure to navigate.
 
 ## Out of scope
 
