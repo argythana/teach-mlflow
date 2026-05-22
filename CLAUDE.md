@@ -10,7 +10,7 @@ Source material starts from the official MLflow docs/tutorials and is augmented 
 
 ## Teaching philosophy
 
-When adding to or expanding a tutorial, follow these editorial principles. The `mlflow-tutorial-expand` skill at `.claude/skills/mlflow-tutorial-expand/` codifies them in more detail.
+When adding to, expanding, restructuring, or cleaning up a tutorial, follow these editorial principles. The `mlflow-tutorial-improve` skill at `.claude/skills/mlflow-tutorial-improve/` codifies them in more detail.
 
 - **Explain terminology, but stay concise.** Define jargon the first time it appears (e.g. *backend store*, *artifact store*, *registered model*, *pyfunc*). One short paragraph or a table, not a wall of text.
 - **Motivate every feature with the problem it solves.** Before showing *how* to call an API, explain *why* a data scientist or ML system would need it. What goes wrong without it? What does it replace (notes in a spreadsheet, ad-hoc pickle files, "ask the author")?
@@ -46,4 +46,4 @@ In MLflow 3+ this creates `mlflow.db` (SQLite backend store) and an `mlartifacts
 - `src/official_tutorials/` — adapted MLflow tutorial notebooks. Ordered with `a_`, `b_`, `c_` prefixes so the intended reading sequence is obvious from `ls`. Each notebook stays close to the upstream original but adds prerequisites, terminology, and "why this feature exists" context per the [Teaching philosophy](#teaching-philosophy) above.
 - `README.md` — audience, motivation, and setup for readers of the repo.
 - `pyproject.toml` / `uv.lock` — dependencies grow as tutorials cover more MLflow features (`mlflow`, `jupyter`, `scikit-learn`, `skops`, `optuna`, …).
-- `.claude/skills/mlflow-tutorial-expand/` — editorial skill for expanding upstream tutorials in the project's house style.
+- `.claude/skills/mlflow-tutorial-improve/` — editorial skill for expanding, restructuring, and cleaning up upstream tutorials in the project's house style.

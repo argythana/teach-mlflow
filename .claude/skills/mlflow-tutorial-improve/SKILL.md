@@ -1,28 +1,33 @@
 ---
-name: mlflow-tutorial-expand
+name: mlflow-tutorial-improve
 description: >
   Use this skill when working inside this MLflow teaching repository to
-  expand, annotate, rewrite, or draft a section — or a whole new
-  notebook — of an MLflow tutorial under `src/official_tutorials/` so
-  it is friendlier for beginner data scientists and researchers.
-  Trigger on prompts like "expand this MLflow section", "explain this
-  MLflow concept better", "make this notebook beginner-friendly", "what
-  context should we add to this cell", or "why does this MLflow feature
-  exist". If the target notebook or cell is unclear, ask which one to
-  edit after routing. Do NOT use it for general Python or ML tutorial
-  writing outside this repo, for editing the upstream MLflow library
-  itself, for non-tutorial docs in this repo (`README.md`, `CLAUDE.md`),
-  or for non-teaching changes to the notebooks (file moves, dependency
-  bumps, formatting, kernel metadata). For dependency work use
-  `uv-deps`; for staging edits use `git-staging`; for the commit message
-  use `commit-message`.
+  improve a tutorial notebook under `src/official_tutorials/` — expand,
+  annotate, rewrite, draft a new section, restructure for flow, or
+  clean up after a previous refactor — so it is friendlier for beginner
+  data scientists and researchers. Trigger on prompts like "expand this
+  MLflow section", "explain this MLflow concept better", "make this
+  notebook beginner-friendly", "what context should we add to this
+  cell", "why does this MLflow feature exist", "the logical flow here
+  is broken", or "clean up the leftover trees / placeholder cells / old
+  references". If the target notebook or cell is unclear, ask which one
+  to edit after routing. Do NOT use it for general Python or ML
+  tutorial writing outside this repo, for editing the upstream MLflow
+  library itself, for non-tutorial docs in this repo (`README.md`,
+  `CLAUDE.md`), or for non-teaching changes to the notebooks (file
+  moves, dependency bumps, formatting, kernel metadata). For dependency
+  work use `uv-deps`; for staging edits use `git-staging`; for the
+  commit message use `commit-message`.
 ---
 
-# MLflow tutorial expand
+# MLflow tutorial improve
 
-Editorial skill for this repo. Use it to expand a section of an MLflow
-tutorial notebook in the project's house style — beginner-friendly,
-concise, and grounded in the problem each MLflow feature solves.
+Editorial skill for this repo. Use it to improve an MLflow tutorial
+notebook in the project's house style — beginner-friendly, concise, and
+grounded in the problem each MLflow feature solves. "Improve" covers
+expanding a section, annotating upstream content, restructuring for
+logical flow, and cleaning up after earlier work — not just adding new
+material.
 
 ## Audience
 
@@ -82,7 +87,39 @@ blog posts or pre-3.x tutorials would be misled, add a short "what
 changed" note. Do not write a full version-history dump — only flag
 changes that affect the current step.
 
-### 6. Annotate the upstream relationship with inline bold callouts
+### 6. Refactor cleanly — a tutorial is not a changelog
+
+When you fix a mistake, rename a convention, or restructure a section,
+remove the old version with the same edit. The reader of this notebook
+tomorrow should not have to reason about what the notebook used to look
+like yesterday. Concretely:
+
+- If a code change makes earlier output stale (e.g. switching
+  `serialization_format` from `cloudpickle` to `skops` turns every
+  `model.pkl` tree into a relic), update or delete every tree dump,
+  table row, and prose reference that still shows the old artifact.
+- If a refactor leaves placeholder code cells, orphan one-liners outside
+  a `start_run`, or "TODO: add the real cell here" stubs, delete them
+  or replace them with the missing real cell — do not ship a notebook
+  whose downstream cells reference a variable the upstream cell never
+  defines.
+- If you change a convention (e.g. server cwd: repo root → `src/`),
+  sweep every section that previously assumed the old convention and
+  rewrite it; do not stack a new caveat on top of the old narrative.
+- Duplicate tree dumps, redundant "after the Nth run" snapshots, and
+  multiple slightly-different versions of the same example are noise.
+  Keep one, the most useful, in the right place.
+- Stale on-disk state (`mlflow.db`, `mlartifacts/`) left over from
+  earlier conventions is per-developer junk; it is safe to delete and
+  re-run, and the notebook should reflect the post-cleanup state, not
+  the cumulative history.
+
+The test: a fresh reader running the notebook end-to-end today should
+get output that matches every tree, table, and snippet in the notebook
+exactly. If any tree shows a file they won't produce, fix the tree (or
+delete it).
+
+### 7. Annotate the upstream relationship with inline bold callouts
 
 When an addition relates to upstream content — correcting, supplementing,
 or deliberately diverging from it — open the paragraph with one of four
@@ -126,7 +163,7 @@ reused when they fit:
 
 1. Identify the section or concept to expand. Read the surrounding cells
    so the addition fits the flow.
-2. Decide the upstream relationship of the addition (see principle 6):
+2. Decide the upstream relationship of the addition (see principle 7):
    - **bug** → inline `**Bug in upstream tutorial:**` callout
    - **stale** → inline `**Stale in upstream tutorial:**` callout
    - **missing** → inline `**Missing from upstream tutorial:**` callout
@@ -163,11 +200,18 @@ Stop and rewrite if the draft does any of these:
   changes and do not belong to this skill.
 - Uses `MISSING FROM THE OFFICIAL TUTORIAL` as a heading prefix on
   additions. That convention is retired in favour of the four
-  inline-bold callouts in principle 6. Use a plain heading for
+  inline-bold callouts in principle 7. Use a plain heading for
   standalone topics; use an inline callout for upstream-relationship
   signal.
 - Stacks multiple upstream-relationship callouts on one paragraph.
   Pick the single label that most accurately names the relationship.
+- Leaves stale artifacts in place after a refactor — duplicate tree
+  dumps, placeholder code cells with "TODO" comments, orphan one-liners
+  outside any `start_run`, prose that still references a `.pkl` file
+  after switching to `skops`, caveats stacked on top of an outdated
+  narrative, or downstream cells that reference variables an upstream
+  cell no longer defines. See principle 6 — a tutorial is not a
+  changelog.
 
 ## Out of scope
 
