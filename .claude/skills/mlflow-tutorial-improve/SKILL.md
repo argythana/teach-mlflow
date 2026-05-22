@@ -176,10 +176,27 @@ line slow scanning to a crawl; the reader gives up before reaching the
 API call. Apply these rules to every prose cell longer than two
 sentences:
 
-- **Soft line breaks** (two trailing spaces + newline) between sentences
-  inside the same paragraph. Each sentence on its own line. The
-  paragraph still renders as one block, but the source reads like a
-  script — and the rendered prose has visible breath marks.
+- **Soft line breaks** between sentences inside the same paragraph.
+  Each sentence on its own line. The paragraph still renders as one
+  block, but the source reads like a script — and the rendered prose
+  has visible breath marks.
+
+  > **CommonMark gotcha — the breaks must be syntactically correct or
+  > they do not render at all.** A bare `\n` between two non-empty
+  > lines collapses to a single space in the rendered output: the
+  > reader sees one continuous paragraph, the source looks broken to
+  > anyone editing it. To get a visible `<br>`, you must end the
+  > prior line with **two trailing spaces**, *then* the newline:
+  >
+  > ```
+  > First sentence.  ← two trailing spaces here
+  > Second sentence.
+  > ```
+  >
+  > This is the single most common silent failure when polishing a
+  > tutorial. If the rendered Jupyter cell shows two sentences on the
+  > same line when the source has them on different lines, the
+  > trailing spaces are missing.
 - **One bullet per distinct sub-concept**, not one bullet per clause.
   If a bullet would run to four full lines of prose, it is probably
   two bullets.
