@@ -8,8 +8,6 @@ wheels/
 
 # Virtual environments
 .venv
-# Local environment variables
-.envrc
 
 # MLflow per-developer runtime state (see notebook cell on default DB / artifact store)
 mlartifacts/
