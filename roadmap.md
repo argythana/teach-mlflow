@@ -93,13 +93,13 @@ The material splits cleanly across three existing notebooks:
 
 | Add to | Section | Net-new content (~2–4 cells each) |
 |---|---|---|
-| **`b_tracking_quickstart`** *(primary)* | "The one-line alternative: `mlflow.autolog()`" | After the manual `log_param`/`log_metric`/`log_model` walkthrough, show `mlflow.sklearn.autolog()` capturing the same params + metrics + model + **signature** automatically. The defaults table with the **`log_input_examples=False` gotcha**, universal `mlflow.autolog()` vs flavor-specific precedence, and the **control-vs-convenience / surprise-artifacts trade-off**. This is the natural home because `b_` is where manual tracking is introduced — readers meet the shortcut right after learning the long way. Fits the repo's `## MISSING FROM THE OFFICIAL TUTORIAL` pattern. |
+| **`b_tracking_quickstart`** ✅ **done** | "The one-line alternative: `mlflow.autolog()`" | Added after the skops section: `mlflow.sklearn.autolog()` capturing the same params + metrics + model + **signature** automatically, a manual-vs-autolog comparison table, the three gotchas (**`log_input_examples=False`**, **reverts to `cloudpickle`** — losing the notebook's skops safety — and surprise artifacts), universal-vs-flavor precedence, and a bridge to `c_`. Also normalized `b_` from `nbformat_minor` 2 → 5. *(Structure validated; not yet executed against a live server.)* |
 | **`c_hyperparameter_tuning`** | "Autolog and search: `max_tuning_runs`" | `c_` does GridSearchCV/child runs by hand; autolog's `max_tuning_runs` (default 5; `None` = all) produces the *parent best-run + child runs* automatically. One short contrast cell: "you wired this up manually — autolog does it in one line, here's what differs." |
 | **`e_logging_callbacks`** | one-paragraph aside | `e_` already does XGBoost callbacks; note that `mlflow.xgboost.autolog()` captures **per-iteration metrics + feature-importance plots** for free, and when you'd still reach for explicit callbacks. Cross-link, don't re-teach. |
 
-**Recommended sequencing:** do the **`b_`** section first (it's the conceptual anchor and the
-most reused), then the **`c_`** section, then the **`e_`** aside. Each is independent and can
-land in its own small commit.
+**Recommended sequencing:** the **`b_`** section (the conceptual anchor and most reused) is
+**done**; next the **`c_`** section, then the **`e_`** aside. Each is independent and can land
+in its own small commit.
 
 **Version-drift to surface in the `b_` section:** MLflow 3 logs models as first-class
 **LoggedModel** entities; `log_datasets=True` and `log_models=True` are defaults;
@@ -134,6 +134,50 @@ the official docs leave fragmented. This is the notebook that makes the whole re
 - This is the first notebook that exercises **both** extra processes at once (tracking on
   5001, serving on 5002) — spell out the terminal setup, as `h_` does.
 
+### System metrics — observability under load (capstone section)
+
+Model metrics answer "is it accurate?"; **system metrics** answer "what did it cost to
+train, and is this hardware the bottleneck?" — the resource-observability half of MLOps. The
+capstone should add a section that logs host CPU / RAM / disk / network / **GPU** as
+time-series metrics during a real, heavy training run, so the reader sees the resource story
+next to the accuracy story.
+
+**API:**
+- Per run: `mlflow.start_run(log_system_metrics=True)`, or globally
+  `mlflow.enable_system_metrics_logging()` (env var `MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING=true`).
+- Cadence: `mlflow.set_system_metrics_sampling_interval(seconds)` and
+  `mlflow.set_system_metrics_samples_before_logging(n)` (defaults: sample every 10 s, log
+  every sample). For a short training run, drop the interval (e.g. 1–2 s) so the charts have
+  enough points to be legible.
+- Metrics land under the **`system/`** namespace (e.g. `system/cpu_utilization_percentage`,
+  `system/system_memory_usage_megabytes`, `system/gpu_0_utilization_percentage`,
+  `system/gpu_0_memory_usage_megabytes`) and render as time series in the run's UI.
+
+**Dependencies:** `psutil` (CPU/RAM/disk/net) already ships with MLflow. **GPU metrics need
+`pynvml`** — not currently installed; add it with `uv add pynvml`. Without it, MLflow silently
+logs everything *except* the `system/gpu_*` series.
+
+**This laptop (verified):** 22 cores, **62 GB RAM**, **NVIDIA RTX 2000 Ada Generation Laptop
+GPU**. So the GPU panel is real here — but only if the training actually uses the GPU.
+
+**A big enough workload to move the needle.** California housing (~20 k rows) won't dent 62 GB
+of RAM or touch the GPU, so the lifecycle steps (train→register→serve) stay on California
+housing for continuity, and the system-metrics section adds a **dedicated "scale" run**:
+- **Large dataset:** generate a large synthetic regression set with
+  `sklearn.datasets.make_regression` (dial `n_samples`/`n_features` up to a few GB of arrays
+  — e.g. ~5–20 M rows × ~50–100 features) so `system/system_memory_usage_*` clearly climbs.
+  Note the chosen size and that it's tunable to the reader's RAM.
+- **GPU training:** sklearn's `RandomForestRegressor` is **CPU-only** and will never light up
+  the GPU. Use **XGBoost on CUDA** (`XGBRegressor(device="cuda", tree_method="hist")`) — already
+  a project dependency — so `system/gpu_0_*` shows real utilization. Frame the contrast:
+  CPU forest vs GPU boosting, and what each does to the system charts.
+- **Teaching point:** tie it back to right-sizing hardware and cost — the reason production
+  teams log system metrics at all.
+
+**Sources:** system metrics docs —
+<https://mlflow.org/docs/latest/ml/tracking/system-metrics/>; XGBoost GPU support —
+<https://xgboost.readthedocs.io/en/stable/gpu/index.html>.
+
 **Gap this proves:** the upstream sklearn guide *narrates* this chain as prose reference
 sections, but there is no runnable, single-model capstone. That's the hole.
 
@@ -164,6 +208,9 @@ order: the **`b_` autolog section** (quick, high-leverage), then the **capstone*
 **`c_`/`e_`** autolog touch-ups.
 
 **Dependencies to add (via `uv add`, when actually used):**
+- `pynvml` — **required for the capstone's GPU system-metrics section** (the NVIDIA RTX 2000
+  Ada is present, but `pynvml` is not installed; without it the `system/gpu_*` series are
+  silently skipped).
 - `shap` — optional, for richer `evaluate()` artifacts in the capstone. The autolog sections
   and `g_`/`h_` need no new deps; `requests` ships with MLflow and `xgboost` is already present.
 
