@@ -17,22 +17,33 @@ land.
 | f | `f_model_evaluation` | `mlflow.models.evaluate()`, custom metrics, validation gates | advanced | ✅ done |
 | g | `g_model_registry` | Versions, aliases, promotion gate, rollback, governance | advanced | ✅ done |
 | h | `h_model_serving` | `mlflow models serve`, `/invocations`, Docker path | advanced | ✅ done |
-| i | `i_capstone_end_to_end` | One model through the full lifecycle | advanced | ⬜ **next** |
+| i | `i_dataset_logging` | `mlflow.data` + `log_input`, raw vs engineered, digests | advanced | ⬜ planned |
+| j | `j_system_metrics` | `system/*` observability under load (RAM/GPU) | advanced | ⬜ planned |
+| k | `k_capstone_end_to_end` | One model through the full lifecycle | advanced | ⬜ **last** |
 
 The traditional-ML MLOps spine is now built end to end: **track** (`b`–`e`) → **evaluate &
 gate** (`f`) → **register & promote** (`g`) → **serve** (`h`). What remains is the
 **autologging backfill** into existing notebooks (see "Autolog: backfill into existing
-notebooks") and the **capstone** that runs *one* model through the whole spine on *one*
-dataset.
+notebooks"), two **standalone feature notebooks** — `i_dataset_logging` and
+`j_system_metrics` — and finally the **capstone** (`k`) that runs *one* model through the
+whole spine on *one* dataset, cross-linking `i_`/`j_` instead of re-teaching them.
+
+**Why the capstone was split (decided June 2026).** The earlier plan bundled the lifecycle
+chain **+** dataset logging **+** system-metrics-under-load into a single `i_capstone`. That's
+three notebooks' worth and breaks the repo's "keep notebooks short and single-topic" rule, so
+dataset logging and system metrics each became their own focused notebook, and the capstone
+shrank to just the narrative lifecycle thread.
 
 ## TODO / backlog (at a glance)
 
 The actionable list. Details live in the sections below.
 
 - [ ] **`e_` XGBoost autolog aside** — the last autolog backfill (one paragraph; see the autolog table).
-- [ ] **`i_capstone_end_to_end`** — build it. Bundles three sub-sections: the lifecycle chain, **system metrics under load** (GPU/RAM), and **dataset logging** (raw vs engineered features).
-- [ ] **`uv add pynvml`** — needed for the capstone's `system/gpu_*` metrics (GPU present, lib not installed). `uv add shap` is optional (richer `evaluate()` artifacts).
-- [ ] **Decide:** dataset logging as a *capstone section* vs its **own short notebook** — it has standalone value; the capstone is already carrying a lot.
+- [ ] **`i_dataset_logging`** — standalone notebook: `mlflow.data.from_pandas` + `log_input`, raw vs engineered feature sets, the digest gotcha, autolog-vs-manual contrast. (Was a capstone section; split out June 2026.)
+- [ ] **`j_system_metrics`** — standalone notebook: `log_system_metrics=True`, sampling cadence, the `system/*` namespace, and a **scale run** (synthetic `make_regression` for RAM + GPU XGBoost). (Was a capstone section; split out June 2026.)
+- [ ] **`k_capstone_end_to_end`** — build it last: the lifecycle chain only, cross-linking `i_`/`j_`. Includes the **Traces-tab orientation note** (see below).
+- [ ] **`uv add pynvml`** — needed for `j_`'s `system/gpu_*` metrics (GPU present, lib not installed). `uv add shap` is optional (richer `evaluate()` artifacts).
+- [ ] **Traces orientation note** — short in-scope cell explaining what the (always-empty-for-traditional-ML) **Traces** tab is and where it lights up. Lands in `k_`'s wrap-up; one-line forward pointer optional from `b_`'s UI tour. See "The Traces tab" below.
 - [ ] **Optional — enhance `c_`'s autolog aside:** record that there is **no native MLflow autolog for Optuna**, and that `optuna_integration.MLflowCallback` is **deprecated** (4.9.0 → removal 6.0.0). (Researched June 2026; see the Optuna note under the autolog section.)
 - [ ] **Optional — `h_` backfill:** add the `mlflow.models.predict()` pre-serve smoke test.
 
@@ -49,6 +60,15 @@ RandomForest/XGBoost, for continuity with `d_`–`h_`).
 
 - **Keep notebooks short and single-topic** (per CLAUDE.md). The capstone is the only one
   that combines everything, and it does so by *reusing* concepts, not re-teaching them.
+- **One small real spine dataset; synthetic only for scale (decided June 2026).** California
+  housing (`fetch_california_housing`, one-line load, ~20 k rows) is the continuity dataset
+  across `b_`–`h_` and the capstone. It's already tiny, so no "load a small sample" step is
+  needed — and you *cannot sample it up* to stress hardware. The hardware-stress lesson lives
+  only in `j_system_metrics`, which uses **synthetic `make_regression`** (large + zero
+  download) plus **GPU XGBoost** for that one purpose. We considered swapping in one large
+  *real* dataset everywhere, but that trades away one-line beginner loading and would retrofit
+  six already-shipped notebooks for continuity that `d_`–`h_` largely already have — not worth
+  it. (`b_` staying on iris is fine; an optional, low-priority continuity nicety, not a rewrite.)
 - **Aliases, not stages.** MLflow 3 deprecated stage transitions. `g_` already teaches
   `models:/<name>@<alias>` with the deprecated-Stages contrast; `h_` serves the alias. The
   capstone follows suit.
@@ -140,43 +160,14 @@ since readers expect an `mlflow.optuna.autolog()` by analogy with sklearn/xgboos
 
 ---
 
-## i_capstone_end_to_end (next — advanced)
+## i_dataset_logging (planned — advanced)
 
-**Purpose.** One realistic, continuous workflow on **one** dataset/model that closes the loop
-the official docs leave fragmented. This is the notebook that makes the whole repo cohere.
-
-**The chain (each step reuses an earlier notebook's concept, doesn't re-teach it):**
-1. **Feature-engineer** the raw data and **log both the raw and engineered datasets**
-   (`mlflow.log_input`) so the run records what the model actually saw — *new* material; see
-   the "Dataset logging" section below.
-2. Tune a few candidate models with child runs (`c_`) — optionally via `autolog()`,
-   cross-linking rather than re-teaching it.
-3. `mlflow.models.evaluate()` to pick the best by held-out RMSE/R² (`f_`).
-4. Gate the winner with `validate_evaluation_results` against a baseline (`f_`).
-5. `register_model(...)` the model that passed → assign `@champion`; keep runner-up as
-   `@challenger` (`g_`).
-6. Load `models:/...@champion` and sanity-check (`g_`).
-7. `mlflow models serve` + curl a real prediction (`h_`).
-
-Plus two cross-cutting sub-sections layered onto the run: **dataset logging** (below) and
-**system metrics under load** (below).
-
-**Design constraints:**
-- Keep it a *capstone*, not a re-teach: link back to `c_`/`f_`/`g_`/`h_` for the "why," and
-  spend the prose on the **decisions** that connect the steps ("select the best, gate it,
-  promote *that one*, serve it"). The official material never makes those decisions explicit
-  because evaluation is siloed from registry/serving.
-- Acknowledge the official toy framing once (wine-quality ElasticNet / iris) and explain why
-  we use California housing + RandomForest/XGBoost instead (continuity + a richer target).
-- This is the first notebook that exercises **both** extra processes at once (tracking on
-  5001, serving on 5002) — spell out the terminal setup, as `h_` does.
-
-### Dataset logging — raw vs engineered features (capstone section)
-
-The capstone is the first notebook to do real **feature engineering**, which is exactly the
-case that motivates **dataset tracking**: once the columns the model trains on differ from the
-raw data, "which data + which features produced this model?" is no longer answerable from the
-run's params and metrics alone. `mlflow.data` + `mlflow.log_input` record that lineage.
+Standalone notebook (split out of the old capstone, June 2026). The motivating moment is real
+**feature engineering**: once the columns the model trains on differ from the raw data, "which
+data + which features produced this model?" is no longer answerable from the run's params and
+metrics alone. `mlflow.data` + `mlflow.log_input` record that lineage. This notebook does a
+small feature-engineering example on California housing so it stands alone; the capstone (`k_`)
+then *cross-links* here rather than re-teaching it.
 
 **The problem it solves:** reproducibility and lineage. A run that trains on a *transformed*
 frame should record both the **raw source** (provenance) and the **engineered feature set**
@@ -222,21 +213,22 @@ dataset you can't re-materialize. `MetaDataset` is the explicit metadata-only va
 
 **Dependencies:** none beyond `mlflow` + pandas (already present) for the `from_pandas` path.
 
-**Open decision (see TODO):** keep this as a capstone section, or split into its own short
-notebook. It has clean standalone value, and the capstone is already carrying the lifecycle
-chain + system metrics. Leaning toward a capstone section so it stays tied to the
-feature-engineering moment that motivates it — but flagged for a call.
+**Resolved (June 2026):** this is **its own notebook** (`i_dataset_logging`), not a capstone
+section — it has clean standalone value and the capstone was over-stuffed. The capstone reuses
+it by cross-link at the feature-engineering step.
 
 **Sources:** dataset tracking guide — <https://mlflow.org/docs/latest/ml/dataset/>;
 `mlflow.data` API — <https://mlflow.org/docs/latest/api_reference/python_api/mlflow.data.html>.
 
-### System metrics — observability under load (capstone section)
+---
 
-Model metrics answer "is it accurate?"; **system metrics** answer "what did it cost to
-train, and is this hardware the bottleneck?" — the resource-observability half of MLOps. The
-capstone should add a section that logs host CPU / RAM / disk / network / **GPU** as
-time-series metrics during a real, heavy training run, so the reader sees the resource story
-next to the accuracy story.
+## j_system_metrics (planned — advanced)
+
+Standalone notebook (split out of the old capstone, June 2026). Model metrics answer "is it
+accurate?"; **system metrics** answer "what did it cost to train, and is this hardware the
+bottleneck?" — the resource-observability half of MLOps. This notebook logs host CPU / RAM /
+disk / network / **GPU** as time-series metrics during a real, heavy training run, so the
+reader sees the resource story next to the accuracy story.
 
 **API:**
 - Per run: `mlflow.start_run(log_system_metrics=True)`, or globally
@@ -256,9 +248,11 @@ logs everything *except* the `system/gpu_*` series.
 **This laptop (verified):** 22 cores, **62 GB RAM**, **NVIDIA RTX 2000 Ada Generation Laptop
 GPU**. So the GPU panel is real here — but only if the training actually uses the GPU.
 
-**A big enough workload to move the needle.** California housing (~20 k rows) won't dent 62 GB
-of RAM or touch the GPU, so the lifecycle steps (train→register→serve) stay on California
-housing for continuity, and the system-metrics section adds a **dedicated "scale" run**:
+**A big enough workload to move the needle.** California housing (~20 k rows, the repo's spine
+dataset) won't dent 62 GB of RAM or touch the GPU, and you can't sample it *up*. So this
+notebook uses a **dedicated synthetic "scale" run** purely to make the charts move — the only
+place in the repo that departs from the California-housing spine, and deliberately so:
+
 - **Large dataset:** generate a large synthetic regression set with
   `sklearn.datasets.make_regression` (dial `n_samples`/`n_features` up to a few GB of arrays
   — e.g. ~5–20 M rows × ~50–100 features) so `system/system_memory_usage_*` clearly climbs.
@@ -274,10 +268,63 @@ housing for continuity, and the system-metrics section adds a **dedicated "scale
 <https://mlflow.org/docs/latest/ml/tracking/system-metrics/>; XGBoost GPU support —
 <https://xgboost.readthedocs.io/en/stable/gpu/index.html>.
 
+---
+
+## k_capstone_end_to_end (last — advanced)
+
+**Purpose.** One realistic, continuous workflow on **one** dataset/model (California housing +
+RandomForest/XGBoost) that closes the loop the official docs leave fragmented. This is the
+notebook that makes the whole repo cohere — and now that dataset logging (`i_`) and system
+metrics (`j_`) are their own notebooks, the capstone is *just the narrative lifecycle thread*.
+
+**The chain (each step reuses an earlier notebook's concept, doesn't re-teach it):**
+
+1. **Feature-engineer** the raw data and **log both the raw and engineered datasets** —
+   cross-link `i_dataset_logging` for the mechanics; here just *do* it.
+2. Tune a few candidate models with child runs (`c_`) — optionally via `autolog()`,
+   cross-linking rather than re-teaching it.
+3. `mlflow.models.evaluate()` to pick the best by held-out RMSE/R² (`f_`).
+4. Gate the winner with `validate_evaluation_results` against a baseline (`f_`).
+5. `register_model(...)` the model that passed → assign `@champion`; keep runner-up as
+   `@challenger` (`g_`).
+6. Load `models:/...@champion` and sanity-check (`g_`).
+7. `mlflow models serve` + curl a real prediction (`h_`).
+8. **Optionally** flip on `log_system_metrics=True` for the heavy tuning step — cross-link
+   `j_system_metrics`; don't re-teach the namespace.
+
+**Design constraints:**
+- Keep it a *capstone*, not a re-teach: link back to `c_`/`f_`/`g_`/`h_`/`i_`/`j_` for the
+  "why," and spend the prose on the **decisions** that connect the steps ("select the best,
+  gate it, promote *that one*, serve it"). The official material never makes those decisions
+  explicit because evaluation is siloed from registry/serving.
+- Acknowledge the official toy framing once (wine-quality ElasticNet / iris) and explain why
+  we use California housing + RandomForest/XGBoost instead (continuity + a richer target).
+- This is the first notebook that exercises **both** extra processes at once (tracking on
+  5001, serving on 5002) — spell out the terminal setup, as `h_` does.
+
+### The Traces tab — orientation note (in-scope; not a tracing tutorial)
+
+A reader on MLflow 3 sees a **Traces** tab next to Runs/Models that is **always empty** for
+traditional-ML work, and reasonably asks "what is this?" Answer it in one short cell in the
+capstone wrap-up (with an optional one-line forward pointer from `b_`'s first UI tour):
+
+- **What it is:** MLflow Tracing records OpenTelemetry-style **spans** (inputs/outputs/latency
+  per step) — built for **GenAI/LLM apps and agents** (LangChain, OpenAI, LlamaIndex, …),
+  where you want to see *inside* a chain/RAG/agent call.
+- **Why it's empty here:** sklearn/XGBoost runs produce no spans; nothing in this repo emits
+  traces. The tab populating requires GenAI instrumentation (`@mlflow.trace` / a GenAI
+  autolog flavor).
+- **Where it goes next:** that's the GenAI track — out of scope for this traditional-ML repo
+  (see "Beyond this roadmap"). The note exists for **MLflow-3 UI literacy**, not to teach
+  tracing. A full tracing tutorial would be a deliberate scope expansion (`j_`-style GenAI
+  notebook, new LLM dep) — deferred.
+- **Sources:** tracing overview — <https://mlflow.org/docs/latest/genai/tracing/>.
+
 **Gap this proves:** the upstream sklearn guide *narrates* this chain as prose reference
 sections, but there is no runnable, single-model capstone. That's the hole.
 
 **Sources:**
+
 - Tutorials & examples index — <https://mlflow.org/docs/latest/ml/tutorials-and-examples/>
 - MLflow for Traditional ML — <https://mlflow.org/docs/latest/ml/traditional-ml/>
 - sklearn guide (closest end-to-end narrative) — <https://mlflow.org/docs/latest/ml/traditional-ml/sklearn/guide/>
@@ -285,30 +332,37 @@ sections, but there is no runnable, single-model capstone. That's the hole.
 - `mlflow.sklearn` / `mlflow.xgboost` API — <https://mlflow.org/docs/latest/python_api/mlflow.sklearn.html>, <https://mlflow.org/docs/latest/python_api/mlflow.xgboost.html>
 - `examples/multistep_workflow/` (closest official "pipeline").
 
-**Depends on:** `c_`, `f_`, `g_`, `h_` — all now done, so this is unblocked.
+**Depends on:** `c_`, `f_`, `g_`, `h_` (all done) plus `i_dataset_logging` and
+`j_system_metrics` — build those two first, then the capstone cross-links them.
 
 ---
 
 ## Sequencing
 
-```
+```text
 autolog backfill ──► b_ (one-line alternative)  ┐
                      c_ (max_tuning_runs)        ├─ independent, small commits
                      e_ (xgboost aside)          ┘
 
-f_ (done) ──► g_ registry (done) ──► h_ serving (done) ──► i_capstone (next)
+f_ (done) ──► g_ registry (done) ──► h_ serving (done) ──┐
+                                                         ├─► k_capstone (last)
+i_dataset_logging  ─┐                                    │
+j_system_metrics   ─┴─ standalone feature notebooks  ───┘
 ```
 
-The autolog backfill and the capstone are independent — either can come first. Suggested
-order: the **`b_` autolog section** (quick, high-leverage), then the **capstone**, then the
-**`c_`/`e_`** autolog touch-ups.
+The autolog backfill, `i_`, and `j_` are all independent — small commits in any order. The
+**capstone (`k_`) comes last** because it cross-links `i_`/`j_`. Suggested order: finish the
+**`e_` autolog aside** (quick), then **`i_dataset_logging`** and **`j_system_metrics`**, then
+the **capstone**.
 
 **Dependencies to add (via `uv add`, when actually used):**
-- `pynvml` — **required for the capstone's GPU system-metrics section** (the NVIDIA RTX 2000
-  Ada is present, but `pynvml` is not installed; without it the `system/gpu_*` series are
-  silently skipped).
-- `shap` — optional, for richer `evaluate()` artifacts in the capstone. The autolog sections
-  and `g_`/`h_` need no new deps; `requests` ships with MLflow and `xgboost` is already present.
+
+- `pynvml` — **required for `j_system_metrics`' GPU series** (the NVIDIA RTX 2000 Ada is
+  present, but `pynvml` is not installed; without it the `system/gpu_*` series are silently
+  skipped).
+- `shap` — optional, for richer `evaluate()` artifacts in the capstone. The autolog sections,
+  `i_`, and `g_`/`h_` need no new deps; `requests` ships with MLflow and `xgboost` is already
+  present.
 
 ## Beyond this roadmap (not yet planned)
 
