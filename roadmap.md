@@ -19,7 +19,7 @@ land.
 | h | `h_model_serving` | `mlflow models serve`, `/invocations`, Docker path | advanced | ✅ done |
 | i | `i_dataset_logging` | `mlflow.data` + `log_input`, raw vs engineered, digests | advanced | ✅ done |
 | j | `j_system_metrics` | `system/*` observability under load (RAM/GPU) | advanced | ✅ done |
-| k | `k_capstone_end_to_end` | One model through the full lifecycle | advanced | ⬜ **next** |
+| k | `k_capstone_end_to_end` | One model through the full lifecycle | advanced | ✅ done |
 
 The traditional-ML MLOps spine is now built end to end: **track** (`b`–`e`) → **evaluate &
 gate** (`f`) → **register & promote** (`g`) → **serve** (`h`). What remains is the
@@ -41,7 +41,7 @@ The actionable list. Details live in the sections below.
 - [x] **`e_` XGBoost autolog aside** — **done.** Markdown aside before `e_`'s "Next steps": `mlflow.xgboost.autolog()` gives the *within-training* (per-boosting-round) curve + feature-importance plot for free, but **can't** produce the study-level `best_so_far` convergence across Optuna trials (different axis) — complementary to the manual callbacks, not redundant. Completes the autolog backfill (`b_`/`c_`/`e_` all done).
 - [x] **`i_dataset_logging`** — **done** (built + executed live, June 2026). 27-cell standalone notebook on California housing: raw + engineered two-`log_input` pattern, the autolog-vs-manual contrast (verified: manual → named `local`-source datasets; autolog → generic `dataset`/`code` source), the digest fingerprint gotcha, `source.load()` reload, `evaluate(data=)` tag-vs-`log_input` nuance, `MetaDataset`. Writes re-loadable CSVs to gitignored `_dataset_demo/`.
 - [x] **`j_system_metrics`** — **done** (built + executed live, June 2026). 21-cell standalone notebook: `log_system_metrics=True`, 1 s sampling cadence, the 13-metric `system/*` namespace, and a CPU-vs-GPU XGBoost contrast on a 5 M×50 synthetic set (verified: GPU run ~12 s/99% GPU util vs CPU run ~52 s/95% CPU util). Surfaces the **`nvidia-ml-py` vs deprecated `pynvml`** drift and the **host-wide (not per-process)** caveat.
-- [ ] **`k_capstone_end_to_end`** — build it last: the lifecycle chain only, cross-linking `i_`/`j_`. Includes the **Traces-tab orientation note** (see below).
+- [x] **`k_capstone_end_to_end`** — **done** (built + executed live, June 2026). 21-cell lifecycle chain on California housing: feature-engineer + dataset logging (`i_`) → tune 3 RF candidates as child runs with system metrics on (`c_`/`j_`) → `evaluate` each (`f_`) → gate winner vs a `DummyRegressor` baseline (`f_`) → register + `@champion`/`@challenger` (`g_`) → load champion → **live `mlflow models serve` on 5002 + curl `/invocations`** (`h_`, used not re-taught) with REST==in-process verified. Includes the **Traces-tab orientation note**. **This completes the roadmap.**
 - [x] **`uv add nvidia-ml-py`** — **done.** Needed for `j_`'s `system/gpu_*` metrics. NB: the roadmap originally said `uv add pynvml`, but `pynvml` is now a **deprecated** shim that warns on import — the correct current package is **`nvidia-ml-py`** (it provides the same `pynvml` module). `uv add shap` is still optional (richer `evaluate()` artifacts).
 - [ ] **Traces orientation note** — short in-scope cell explaining what the (always-empty-for-traditional-ML) **Traces** tab is and where it lights up. Lands in `k_`'s wrap-up; one-line forward pointer optional from `b_`'s UI tour. See "The Traces tab" below.
 - [ ] **Optional — enhance `c_`'s autolog aside:** record that there is **no native MLflow autolog for Optuna**, and that `optuna_integration.MLflowCallback` is **deprecated** (4.9.0 → removal 6.0.0). (Researched June 2026; see the Optuna note under the autolog section.)
@@ -270,7 +270,7 @@ place in the repo that departs from the California-housing spine, and deliberate
 
 ---
 
-## k_capstone_end_to_end (last — advanced)
+## k_capstone_end_to_end (✅ done — advanced)
 
 **Purpose.** One realistic, continuous workflow on **one** dataset/model (California housing +
 RandomForest/XGBoost) that closes the loop the official docs leave fragmented. This is the
@@ -350,8 +350,10 @@ i_dataset_logging  ─┐                                    │
 j_system_metrics   ─┴─ standalone feature notebooks  ───┘
 ```
 
-The autolog backfill is **done** (`b_`/`c_`/`e_`), and **`i_dataset_logging` is done**. What's
-left: the **capstone (`k_`)**, which comes last because it cross-links `i_`/`j_`.
+**The roadmap is complete.** Autolog backfill (`b_`/`c_`/`e_`), `i_dataset_logging`,
+`j_system_metrics`, and the `k_capstone_end_to_end` finale are all built and executed live.
+Remaining items are the *optional* touch-ups below (e.g. `h_`'s `mlflow.models.predict()` smoke
+test) and the future topics in "Beyond this roadmap."
 
 **Dependencies:**
 
