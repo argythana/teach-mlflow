@@ -44,8 +44,8 @@ The actionable list. Details live in the sections below.
 - [x] **`k_capstone_end_to_end`** — **done** (built + executed live, June 2026). 21-cell lifecycle chain on California housing: feature-engineer + dataset logging (`i_`) → tune 3 RF candidates as child runs with system metrics on (`c_`/`j_`) → `evaluate` each (`f_`) → gate winner vs a `DummyRegressor` baseline (`f_`) → register + `@champion`/`@challenger` (`g_`) → load champion → **live `mlflow models serve` on 5002 + curl `/invocations`** (`h_`, used not re-taught) with REST==in-process verified. Includes the **Traces-tab orientation note**. **This completes the roadmap.**
 - [x] **`uv add nvidia-ml-py`** — **done.** Needed for `j_`'s `system/gpu_*` metrics. NB: the roadmap originally said `uv add pynvml`, but `pynvml` is now a **deprecated** shim that warns on import — the correct current package is **`nvidia-ml-py`** (it provides the same `pynvml` module). `uv add shap` is still optional (richer `evaluate()` artifacts).
 - [ ] **Traces orientation note** — short in-scope cell explaining what the (always-empty-for-traditional-ML) **Traces** tab is and where it lights up. Lands in `k_`'s wrap-up; one-line forward pointer optional from `b_`'s UI tour. See "The Traces tab" below.
-- [ ] **Optional — enhance `c_`'s autolog aside:** record that there is **no native MLflow autolog for Optuna**, and that `optuna_integration.MLflowCallback` is **deprecated** (4.9.0 → removal 6.0.0). (Researched June 2026; see the Optuna note under the autolog section.)
-- [ ] **Optional — `h_` backfill:** add the `mlflow.models.predict()` pre-serve smoke test.
+- [x] **Optional — enhance `c_`'s autolog aside:** **done.** Added a markdown note after the GridSearch comparison: **no native `mlflow.optuna.autolog()`** (Optuna isn't a training-library flavor), and the Optuna-side `optuna_integration.MLflowCallback` is **deprecated** (`@deprecated_class("4.9.0", "6.0.0")`) — so the manual nested-run pattern stays the durable one.
+- [x] **Optional — `h_` backfill:** **done.** Added a "Step 1.5" `mlflow.models.predict()` pre-serve smoke test (validate the logged model loads + predicts, by default in a dependency-isolated env), executed live; regenerated `h_` against a fresh self-contained champion so all cells agree (smoke test == REST == in-process).
 
 ## The gap we're filling (still true)
 
@@ -103,12 +103,10 @@ REST-vs-in-process equivalence check → `/health` + signature-enforcement guard
 `SCHEMA_ENFORCEMENT_FAILED`) → `build-docker` container path → "promotion reaches the endpoint"
 (alias resolved at load time, restart/webhook to pick up) → managed deployment targets.
 
-**Deltas vs plan (minor, optional backfill):**
+**Deltas vs plan:**
 - The **`mlflow.models.predict()` pre-serve smoke test** (validate a model in an isolated env
-  before standing up a server) was not included. Worth a short Step if we ever revise `h_`.
+  before standing up a server) — **now added** as "Step 1.5" (June 2026).
 - No **MLServer-deprecation** note — but `h_` never teaches `--enable-mlserver`, so this is moot.
-
-Neither delta is blocking. Capture them as possible touch-ups, not rework.
 
 ---
 
