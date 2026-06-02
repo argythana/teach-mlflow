@@ -17,9 +17,9 @@ land.
 | f | `f_model_evaluation` | `mlflow.models.evaluate()`, custom metrics, validation gates | advanced | ✅ done |
 | g | `g_model_registry` | Versions, aliases, promotion gate, rollback, governance | advanced | ✅ done |
 | h | `h_model_serving` | `mlflow models serve`, `/invocations`, Docker path | advanced | ✅ done |
-| i | `i_dataset_logging` | `mlflow.data` + `log_input`, raw vs engineered, digests | advanced | ⬜ planned |
-| j | `j_system_metrics` | `system/*` observability under load (RAM/GPU) | advanced | ⬜ planned |
-| k | `k_capstone_end_to_end` | One model through the full lifecycle | advanced | ⬜ **last** |
+| i | `i_dataset_logging` | `mlflow.data` + `log_input`, raw vs engineered, digests | advanced | ✅ done |
+| j | `j_system_metrics` | `system/*` observability under load (RAM/GPU) | advanced | ⬜ **next** |
+| k | `k_capstone_end_to_end` | One model through the full lifecycle | advanced | ⬜ last |
 
 The traditional-ML MLOps spine is now built end to end: **track** (`b`–`e`) → **evaluate &
 gate** (`f`) → **register & promote** (`g`) → **serve** (`h`). What remains is the
@@ -39,7 +39,7 @@ shrank to just the narrative lifecycle thread.
 The actionable list. Details live in the sections below.
 
 - [x] **`e_` XGBoost autolog aside** — **done.** Markdown aside before `e_`'s "Next steps": `mlflow.xgboost.autolog()` gives the *within-training* (per-boosting-round) curve + feature-importance plot for free, but **can't** produce the study-level `best_so_far` convergence across Optuna trials (different axis) — complementary to the manual callbacks, not redundant. Completes the autolog backfill (`b_`/`c_`/`e_` all done).
-- [ ] **`i_dataset_logging`** — standalone notebook: `mlflow.data.from_pandas` + `log_input`, raw vs engineered feature sets, the digest gotcha, autolog-vs-manual contrast. (Was a capstone section; split out June 2026.)
+- [x] **`i_dataset_logging`** — **done** (built + executed live, June 2026). 27-cell standalone notebook on California housing: raw + engineered two-`log_input` pattern, the autolog-vs-manual contrast (verified: manual → named `local`-source datasets; autolog → generic `dataset`/`code` source), the digest fingerprint gotcha, `source.load()` reload, `evaluate(data=)` tag-vs-`log_input` nuance, `MetaDataset`. Writes re-loadable CSVs to gitignored `_dataset_demo/`.
 - [ ] **`j_system_metrics`** — standalone notebook: `log_system_metrics=True`, sampling cadence, the `system/*` namespace, and a **scale run** (synthetic `make_regression` for RAM + GPU XGBoost). (Was a capstone section; split out June 2026.)
 - [ ] **`k_capstone_end_to_end`** — build it last: the lifecycle chain only, cross-linking `i_`/`j_`. Includes the **Traces-tab orientation note** (see below).
 - [ ] **`uv add pynvml`** — needed for `j_`'s `system/gpu_*` metrics (GPU present, lib not installed). `uv add shap` is optional (richer `evaluate()` artifacts).
@@ -159,7 +159,7 @@ since readers expect an `mlflow.optuna.autolog()` by analogy with sklearn/xgboos
 
 ---
 
-## i_dataset_logging (planned — advanced)
+## i_dataset_logging (✅ done — advanced)
 
 Standalone notebook (split out of the old capstone, June 2026). The motivating moment is real
 **feature engineering**: once the columns the model trains on differ from the raw data, "which
@@ -349,9 +349,9 @@ i_dataset_logging  ─┐                                    │
 j_system_metrics   ─┴─ standalone feature notebooks  ───┘
 ```
 
-The autolog backfill is **done** (`b_`/`c_`/`e_`). `i_` and `j_` are independent — small
-commits in any order. The **capstone (`k_`) comes last** because it cross-links `i_`/`j_`.
-Suggested order: **`i_dataset_logging`** and **`j_system_metrics`**, then the **capstone**.
+The autolog backfill is **done** (`b_`/`c_`/`e_`), and **`i_dataset_logging` is done**. What's
+left: **`j_system_metrics`** (next), then the **capstone (`k_`)**, which comes last because it
+cross-links `i_`/`j_`.
 
 **Dependencies to add (via `uv add`, when actually used):**
 
