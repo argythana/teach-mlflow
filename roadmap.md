@@ -18,8 +18,8 @@ land.
 | g | `g_model_registry` | Versions, aliases, promotion gate, rollback, governance | advanced | ✅ done |
 | h | `h_model_serving` | `mlflow models serve`, `/invocations`, Docker path | advanced | ✅ done |
 | i | `i_dataset_logging` | `mlflow.data` + `log_input`, raw vs engineered, digests | advanced | ✅ done |
-| j | `j_system_metrics` | `system/*` observability under load (RAM/GPU) | advanced | ⬜ **next** |
-| k | `k_capstone_end_to_end` | One model through the full lifecycle | advanced | ⬜ last |
+| j | `j_system_metrics` | `system/*` observability under load (RAM/GPU) | advanced | ✅ done |
+| k | `k_capstone_end_to_end` | One model through the full lifecycle | advanced | ⬜ **next** |
 
 The traditional-ML MLOps spine is now built end to end: **track** (`b`–`e`) → **evaluate &
 gate** (`f`) → **register & promote** (`g`) → **serve** (`h`). What remains is the
@@ -40,9 +40,9 @@ The actionable list. Details live in the sections below.
 
 - [x] **`e_` XGBoost autolog aside** — **done.** Markdown aside before `e_`'s "Next steps": `mlflow.xgboost.autolog()` gives the *within-training* (per-boosting-round) curve + feature-importance plot for free, but **can't** produce the study-level `best_so_far` convergence across Optuna trials (different axis) — complementary to the manual callbacks, not redundant. Completes the autolog backfill (`b_`/`c_`/`e_` all done).
 - [x] **`i_dataset_logging`** — **done** (built + executed live, June 2026). 27-cell standalone notebook on California housing: raw + engineered two-`log_input` pattern, the autolog-vs-manual contrast (verified: manual → named `local`-source datasets; autolog → generic `dataset`/`code` source), the digest fingerprint gotcha, `source.load()` reload, `evaluate(data=)` tag-vs-`log_input` nuance, `MetaDataset`. Writes re-loadable CSVs to gitignored `_dataset_demo/`.
-- [ ] **`j_system_metrics`** — standalone notebook: `log_system_metrics=True`, sampling cadence, the `system/*` namespace, and a **scale run** (synthetic `make_regression` for RAM + GPU XGBoost). (Was a capstone section; split out June 2026.)
+- [x] **`j_system_metrics`** — **done** (built + executed live, June 2026). 21-cell standalone notebook: `log_system_metrics=True`, 1 s sampling cadence, the 13-metric `system/*` namespace, and a CPU-vs-GPU XGBoost contrast on a 5 M×50 synthetic set (verified: GPU run ~12 s/99% GPU util vs CPU run ~52 s/95% CPU util). Surfaces the **`nvidia-ml-py` vs deprecated `pynvml`** drift and the **host-wide (not per-process)** caveat.
 - [ ] **`k_capstone_end_to_end`** — build it last: the lifecycle chain only, cross-linking `i_`/`j_`. Includes the **Traces-tab orientation note** (see below).
-- [ ] **`uv add pynvml`** — needed for `j_`'s `system/gpu_*` metrics (GPU present, lib not installed). `uv add shap` is optional (richer `evaluate()` artifacts).
+- [x] **`uv add nvidia-ml-py`** — **done.** Needed for `j_`'s `system/gpu_*` metrics. NB: the roadmap originally said `uv add pynvml`, but `pynvml` is now a **deprecated** shim that warns on import — the correct current package is **`nvidia-ml-py`** (it provides the same `pynvml` module). `uv add shap` is still optional (richer `evaluate()` artifacts).
 - [ ] **Traces orientation note** — short in-scope cell explaining what the (always-empty-for-traditional-ML) **Traces** tab is and where it lights up. Lands in `k_`'s wrap-up; one-line forward pointer optional from `b_`'s UI tour. See "The Traces tab" below.
 - [ ] **Optional — enhance `c_`'s autolog aside:** record that there is **no native MLflow autolog for Optuna**, and that `optuna_integration.MLflowCallback` is **deprecated** (4.9.0 → removal 6.0.0). (Researched June 2026; see the Optuna note under the autolog section.)
 - [ ] **Optional — `h_` backfill:** add the `mlflow.models.predict()` pre-serve smoke test.
@@ -221,7 +221,7 @@ it by cross-link at the feature-engineering step.
 
 ---
 
-## j_system_metrics (planned — advanced)
+## j_system_metrics (✅ done — advanced)
 
 Standalone notebook (split out of the old capstone, June 2026). Model metrics answer "is it
 accurate?"; **system metrics** answer "what did it cost to train, and is this hardware the
@@ -240,9 +240,10 @@ reader sees the resource story next to the accuracy story.
   `system/system_memory_usage_megabytes`, `system/gpu_0_utilization_percentage`,
   `system/gpu_0_memory_usage_megabytes`) and render as time series in the run's UI.
 
-**Dependencies:** `psutil` (CPU/RAM/disk/net) already ships with MLflow. **GPU metrics need
-`pynvml`** — not currently installed; add it with `uv add pynvml`. Without it, MLflow silently
-logs everything *except* the `system/gpu_*` series.
+**Dependencies:** `psutil` (CPU/RAM/disk/net) already ships with MLflow. **GPU metrics need the
+`pynvml` module — installed via `uv add nvidia-ml-py`** (NVIDIA's official bindings; the older
+standalone `pynvml` package is deprecated and warns on import). Without it, MLflow silently logs
+everything *except* the `system/gpu_*` series. *(Added June 2026.)*
 
 **This laptop (verified):** 22 cores, **62 GB RAM**, **NVIDIA RTX 2000 Ada Generation Laptop
 GPU**. So the GPU panel is real here — but only if the training actually uses the GPU.
@@ -350,17 +351,15 @@ j_system_metrics   ─┴─ standalone feature notebooks  ───┘
 ```
 
 The autolog backfill is **done** (`b_`/`c_`/`e_`), and **`i_dataset_logging` is done**. What's
-left: **`j_system_metrics`** (next), then the **capstone (`k_`)**, which comes last because it
-cross-links `i_`/`j_`.
+left: the **capstone (`k_`)**, which comes last because it cross-links `i_`/`j_`.
 
-**Dependencies to add (via `uv add`, when actually used):**
+**Dependencies:**
 
-- `pynvml` — **required for `j_system_metrics`' GPU series** (the NVIDIA RTX 2000 Ada is
-  present, but `pynvml` is not installed; without it the `system/gpu_*` series are silently
-  skipped).
+- `nvidia-ml-py` — **added** (June 2026); provides the `pynvml` module `j_system_metrics` uses
+  for its GPU series. The standalone `pynvml` package is deprecated — use `nvidia-ml-py`.
 - `shap` — optional, for richer `evaluate()` artifacts in the capstone. The autolog sections,
-  `i_`, and `g_`/`h_` need no new deps; `requests` ships with MLflow and `xgboost` is already
-  present.
+  `i_`, `j_`, and `g_`/`h_` need no further deps; `requests` ships with MLflow and `xgboost` is
+  already present.
 
 ## Beyond this roadmap (not yet planned)
 
