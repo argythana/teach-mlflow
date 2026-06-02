@@ -38,7 +38,7 @@ shrank to just the narrative lifecycle thread.
 
 The actionable list. Details live in the sections below.
 
-- [ ] **`e_` XGBoost autolog aside** — the last autolog backfill (one paragraph; see the autolog table).
+- [x] **`e_` XGBoost autolog aside** — **done.** Markdown aside before `e_`'s "Next steps": `mlflow.xgboost.autolog()` gives the *within-training* (per-boosting-round) curve + feature-importance plot for free, but **can't** produce the study-level `best_so_far` convergence across Optuna trials (different axis) — complementary to the manual callbacks, not redundant. Completes the autolog backfill (`b_`/`c_`/`e_` all done).
 - [ ] **`i_dataset_logging`** — standalone notebook: `mlflow.data.from_pandas` + `log_input`, raw vs engineered feature sets, the digest gotcha, autolog-vs-manual contrast. (Was a capstone section; split out June 2026.)
 - [ ] **`j_system_metrics`** — standalone notebook: `log_system_metrics=True`, sampling cadence, the `system/*` namespace, and a **scale run** (synthetic `make_regression` for RAM + GPU XGBoost). (Was a capstone section; split out June 2026.)
 - [ ] **`k_capstone_end_to_end`** — build it last: the lifecycle chain only, cross-linking `i_`/`j_`. Includes the **Traces-tab orientation note** (see below).
@@ -126,11 +126,10 @@ The material splits cleanly across three existing notebooks:
 |---|---|---|
 | **`b_tracking_quickstart`** ✅ **done** | "The one-line alternative: `mlflow.autolog()`" | Added after the skops section: `mlflow.sklearn.autolog()` capturing the same params + metrics + model + **signature** automatically, a manual-vs-autolog comparison table, the three gotchas (**`log_input_examples=False`**, **reverts to `cloudpickle`** — losing the notebook's skops safety — and surprise artifacts), universal-vs-flavor precedence, and a bridge to `c_`. Also normalized `b_` from `nbformat_minor` 2 → 5. *(Structure validated; not yet executed against a live server.)* |
 | **`c_hyperparameter_tuning`** ✅ **done** | "Aside: `autolog` does the parent/child wiring — for scikit-learn search" | Added before Next steps: an aside contrasting the notebook's hand-wired **Optuna** loop (nested runs, per-trial `log_*`, manual best-run promotion) with `mlflow.sklearn.autolog()` on `GridSearchCV`, which builds the parent (`best_*`, `best_cv_score`, `training_*`, `cv_results.csv`) and child runs automatically via **`max_tuning_runs`** (default 5; `None` = all). Honest scope note: auto-grouping is sklearn-search-only — Optuna isn't a sklearn estimator, so the manual approach stays; plus the cloudpickle-vs-skops caveat. *(Verified live: parent + 3 of 4 combos as child runs.)* |
-| **`e_logging_callbacks`** | one-paragraph aside | `e_` already does XGBoost callbacks; note that `mlflow.xgboost.autolog()` captures **per-iteration metrics + feature-importance plots** for free, and when you'd still reach for explicit callbacks. Cross-link, don't re-teach. |
+| **`e_logging_callbacks`** ✅ **done** | "Aside: `mlflow.xgboost.autolog()` gives the *within-training* curve for free" | Markdown aside before "Next steps": `mlflow.xgboost.autolog()` captures **per-boosting-round metrics + feature-importance plots** for free (the Step-7 plot, essentially), but operates on *one fit at a time* so it **can't** build the parent-run study-level convergence — that's a different axis (Optuna trial #, not boosting round). Recipe: autolog on the children, keep `mlflow_progress_callback` on the parent. Cross-links `b_`/`c_`; carries the `ubj`-format caveat. *(Markdown-only; no execution needed.)* |
 
-**Recommended sequencing:** the **`b_`** and **`c_`** sections are **done**; the **`e_`**
-XGBoost autolog aside is the only autolog backfill left. Each is independent and lands in its
-own small commit.
+**Recommended sequencing:** **all three autolog backfills (`b_`/`c_`/`e_`) are now done.**
+Each landed in its own small commit.
 
 **Version-drift to surface in the `b_` section:** MLflow 3 logs models as first-class
 **LoggedModel** entities; `log_datasets=True` and `log_models=True` are defaults;
@@ -341,7 +340,7 @@ sections, but there is no runnable, single-model capstone. That's the hole.
 
 ```text
 autolog backfill ──► b_ (one-line alternative)  ┐
-                     c_ (max_tuning_runs)        ├─ independent, small commits
+   (all done)        c_ (max_tuning_runs)        ├─ independent, small commits
                      e_ (xgboost aside)          ┘
 
 f_ (done) ──► g_ registry (done) ──► h_ serving (done) ──┐
@@ -350,10 +349,9 @@ i_dataset_logging  ─┐                                    │
 j_system_metrics   ─┴─ standalone feature notebooks  ───┘
 ```
 
-The autolog backfill, `i_`, and `j_` are all independent — small commits in any order. The
-**capstone (`k_`) comes last** because it cross-links `i_`/`j_`. Suggested order: finish the
-**`e_` autolog aside** (quick), then **`i_dataset_logging`** and **`j_system_metrics`**, then
-the **capstone**.
+The autolog backfill is **done** (`b_`/`c_`/`e_`). `i_` and `j_` are independent — small
+commits in any order. The **capstone (`k_`) comes last** because it cross-links `i_`/`j_`.
+Suggested order: **`i_dataset_logging`** and **`j_system_metrics`**, then the **capstone**.
 
 **Dependencies to add (via `uv add`, when actually used):**
 
