@@ -17,3 +17,6 @@ mlflow.db
 # Demo data written by i_dataset_logging.ipynb (re-loadable source files)
 _dataset_demo/
 
+# Demo data written by k_capstone_end_to_end.ipynb
+_capstone_demo/
+
