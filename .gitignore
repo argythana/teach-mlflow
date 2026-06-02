@@ -14,3 +14,6 @@ mlartifacts/
 mlruns/
 mlflow.db
 
+# Demo data written by i_dataset_logging.ipynb (re-loadable source files)
+_dataset_demo/
+
