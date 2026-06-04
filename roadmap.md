@@ -74,6 +74,8 @@ RandomForest/XGBoost, for continuity with `d_`–`h_`).
   capstone follows suit.
 - **Advanced notebooks use port 5001** for the tracking server; `h_` adds **5002** for the
   model server. The capstone reuses both.
+- **Notebooks are grouped by track.** Traditional-ML notebooks (`a_`–`k_`) live in `src/ml/`;
+  the GenAI track will live in `src/gen_ai/`.
 
 ---
 
@@ -369,6 +371,6 @@ Candidate future topics once the capstone lands, in rough priority order:
 - **Remote/team setup** — backend store on a real DB, artifact store on S3/GCS, the
   client/server split (`examples/remote_store`).
 - **Deployment targets deep-dive** — SageMaker / Kubernetes / Modal (mostly platform).
-- **GenAI track** — explicitly out of scope for this traditional-ML repo, but `h_`'s "Next
-  steps" already points readers there (`mlflow.genai.evaluate`, tracing) as the natural Part 2.
-  Note the boundary so readers know where it diverges.
+- **GenAI track** — the planned Part 2, to land in `src/gen_ai/` (folder created as a
+  placeholder). `h_`'s "Next steps" already points readers there (`mlflow.genai.evaluate`,
+  tracing) as the natural follow-on. Note the boundary so readers know where it diverges.
