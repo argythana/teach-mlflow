@@ -1,0 +1,56 @@
+# Plan: GenAI tutorial track + shared `basics/`
+
+The forward-looking build plan. For the at-a-glance status of both tracks see
+[`roadmap.md`](./roadmap.md).
+
+## Context
+
+The repo regrouped notebooks into `src/ml/` (traditional-ML, complete) and an empty
+`src/gen_ai/` placeholder. We are building out the **GenAI track** without re-teaching the
+foundations both tracks share. Two foundations are track-agnostic — `a_setup_mlflow`
+(infrastructure) and `b_tracking_quickstart` (experiments, runs, the three stores) — so they
+now live in `src/basics/`.
+
+**Decisions taken:**
+1. **LLM backend: Ollama-default, OpenAI noted.** GenAI notebooks teach against a local
+   Ollama model (zero cost, no API key — fits the "students with no budget" audience), and
+   show the one-line swap to the OpenAI API. Ollama is a documented *system prerequisite*,
+   like the tracking server — not a pip dependency.
+2. **`basics/` holds `a_setup` + the whole `b_tracking_quickstart`.** `b_`'s second half
+   stays sklearn-flavored; a skim note tells GenAI readers the tracking concepts above are
+   what matter and the model-logging mechanics belong to the `ml/` track.
+
+## Done (this restructure)
+
+- Created `src/basics/`; moved `a_setup_mlflow` + `b_tracking_quickstart` there.
+- Renumbered the traditional-ML notebooks `src/ml/` → `a_`–`i_`.
+- Swept every cross-reference + the docs (`README.md`, `CLAUDE.md`, the skill); updated
+  `a_setup`'s Traces-tab note (GenAI is now an in-repo track, not "out of scope") and its
+  "What's next" branch (basics → `ml/` / `gen_ai/`); added the `b_` skim note.
+- Created this `roadmap/` folder.
+
+## To build — GenAI notebooks (`src/gen_ai/`)
+
+Build one at a time, executed live against a local Ollama model. Sequence:
+
+| # | Notebook | Teaches | Parallels (ml) |
+|---|----------|---------|----------------|
+| a | `a_tracing_quickstart` | The Traces tab lights up. Ollama prereq + `mlflow.openai.autolog()` against Ollama's OpenAI-compatible endpoint + a manual `@mlflow.trace`. Spans = inputs/outputs/latency. | the basics quickstart |
+| b | `b_tracing_a_multistep_app` | A small RAG / tool-using chain: nested spans, framework autolog (LangChain or LlamaIndex). *Why* tracing matters — see inside a chain. | — |
+| c | `c_genai_evaluation` | `mlflow.genai.evaluate()` with LLM-as-judge scorers (correctness, relevance, groundedness, guidelines) + a custom scorer; eval datasets. | `d_model_evaluation` |
+| d | `d_prompt_registry` | `register_prompt`, prompt versions + aliases, compare in the UI, load by alias, evaluate prompt versions. | `e_model_registry` |
+| e | `e_genai_app_serving` (advanced) | Log a GenAI app/agent (models-from-code / `ResponsesAgent`), serve it, the deployment story. | `f_model_serving` |
+| f | `f_feedback_and_monitoring` (stretch) | Human feedback / assessments on traces; production-monitoring scorers on live traffic. | — |
+
+**Editorial stance** (per the `mlflow-tutorial-improve` skill): lead with the *problem*,
+define GenAI jargon once (span, trace, scorer, judge, prompt version), cross-link the `ml/`
+analog instead of re-teaching shared MLflow concepts.
+
+**Dependencies (add via `uv add` when the first notebook is built, not before):** `mlflow`
+GenAI extras, the `openai` client (used against Ollama too), optionally `langchain` /
+`llama-index` for the multistep notebook. **Ollama is a documented system prerequisite**, not
+a Python dependency — a first cell should explain installing it and pulling a small model.
+
+## Build order
+`a_tracing_quickstart` first (it's the entry point and where the Traces tab finally fills),
+then `c_` → `d_` → `e_`. `b_` (multistep) and `f_` (feedback) are enrichment, not blockers.
