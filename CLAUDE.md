@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a **learning/teaching repository** for MLflow, not a library or service. The goal is to build tutorials and explanations that take a reader from "I know Python and ML" to advanced MLflow / MLOps topics (tracking, registry, serving). The target audience is researchers and data scientists who are *not* familiar with running servers, model serving, or MLOps — including students at universities that do not teach MLflow.
 
-Source material starts from the official MLflow docs/tutorials and is augmented where they are unclear, skip a step, or fail to motivate why the feature exists. Treat `src/official_tutorials/b_tracking_quickstart.ipynb` as the canonical example of how to add value on top of upstream material — in particular the `## MISSING FROM THE OFFICIAL TUTORIAL` section and the "MLflow Default Database and Registry store URI" deep-dive (three-store table, "what changed in MLflow 3", problem→feature framing).
+Source material starts from the official MLflow docs/tutorials and is augmented where they are unclear, skip a step, or fail to motivate why the feature exists. Treat `src/ml/b_tracking_quickstart.ipynb` as the canonical example of how to add value on top of upstream material — in particular the `## MISSING FROM THE OFFICIAL TUTORIAL` section and the "MLflow Default Database and Registry store URI" deep-dive (three-store table, "what changed in MLflow 3", problem→feature framing).
 
 ## Teaching philosophy
 
@@ -43,7 +43,7 @@ In MLflow 3+ this creates `mlflow.db` (SQLite backend store) and an `mlartifacts
 
 ## Repository layout
 
-- `src/official_tutorials/` — adapted MLflow tutorial notebooks. Ordered with `a_`, `b_`, `c_` prefixes so the intended reading sequence is obvious from `ls`. Each notebook stays close to the upstream original but adds prerequisites, terminology, and "why this feature exists" context per the [Teaching philosophy](#teaching-philosophy) above.
+- `src/ml/` — adapted MLflow tutorial notebooks. Ordered with `a_`, `b_`, `c_` prefixes so the intended reading sequence is obvious from `ls`. Each notebook stays close to the upstream original but adds prerequisites, terminology, and "why this feature exists" context per the [Teaching philosophy](#teaching-philosophy) above.
 - `README.md` — audience, motivation, and setup for readers of the repo.
 - `pyproject.toml` / `uv.lock` — dependencies grow as tutorials cover more MLflow features (`mlflow`, `jupyter`, `scikit-learn`, `skops`, `optuna`, …).
 - `.claude/skills/mlflow-tutorial-improve/` — editorial skill for expanding, restructuring, and cleaning up upstream tutorials in the project's house style.
