@@ -10,7 +10,7 @@ MLflow is not taught at any Computer Science university in Greece, even though i
 
 ## The tutorials
 
-Notebooks live in `src/official_tutorials/` and are prefixed `a_`, `b_`, `c_`, … so the intended reading order is obvious from `ls`. Each one stays close to the official MLflow material but adds the prerequisites, terminology, and "why this feature exists" context the upstream docs assume or skip.
+Notebooks are grouped by track: traditional-ML notebooks live in `src/ml/` and the GenAI / LLM track will live in `src/gen_ai/`. Within `src/ml/` they are prefixed `a_`, `b_`, `c_`, … so the intended reading order is obvious from `ls`. Each one stays close to the official MLflow material but adds the prerequisites, terminology, and "why this feature exists" context the upstream docs assume or skip.
 
 **Getting started** (local server on port `5000`):
 
@@ -26,7 +26,7 @@ Notebooks live in `src/official_tutorials/` and are prefixed `a_`, `b_`, `c_`, �
 - `g_model_registry` — versions, `@champion` / `@challenger` aliases, the promotion lifecycle, and rollback.
 - `h_model_serving` — serve a registered model over REST with `mlflow models serve`; the `/invocations` contract, signature enforcement, and the container path.
 
-That completes the traditional-ML MLOps spine (tracking → evaluation → registry → serving). A GenAI / LLM track is the planned Part 2.
+That completes the traditional-ML MLOps spine (tracking → evaluation → registry → serving). A GenAI / LLM track is the planned Part 2 and will land under `src/gen_ai/`.
 
 ## Start the MLflow tracking server first
 
