@@ -2,7 +2,7 @@
 name: mlflow-tutorial-improve
 description: >
   Use this skill when working inside this MLflow teaching repository to
-  improve a tutorial notebook under `src/official_tutorials/` — expand,
+  improve a tutorial notebook under `src/ml/` — expand,
   annotate, rewrite, draft a new section, restructure for flow, or
   clean up after a previous refactor — so it is friendlier for beginner
   data scientists and researchers. Trigger on prompts like "expand this
