@@ -54,21 +54,37 @@ The `openai` client (which talks to both Ollama and OpenAI) is added to the proj
 model — notebooks append `/no_think` for clean, fast traces and turn thinking on where it's the
 point. Lighter alt: `gemma3:4b`.
 
-**Status:** `a_tracing_quickstart` ✅ built & verified (Ollama + Azure backends).
-`c_genai_evaluation` **drafted** — LLM-as-judge via MLflow's native `azure:/` provider (no
-`litellm` needed; judges read `AZURE_API_KEY`/`AZURE_API_BASE`/`AZURE_API_VERSION`, mapped from
-the repo's `AZURE_OPENAI_*`). Smoke-tested live; needs a full run. `b_tracing_a_multistep_app`
-**drafted** — a hand-built RAG (no framework) showing nested `RETRIEVER`/`CHAIN`/`LLM` spans.
-`gen_ai/` is now contiguous `a_`–`c_`; `d_`/`e_` planned.
+**Status:** `a_`–`d_` **drafted and contiguous**. `a_tracing_quickstart` ✅ verified (Ollama +
+Azure). `b_` hand-built RAG; `c_` LLM-as-judge (Azure judge via MLflow's native `azure:/`
+provider — no `litellm`; judges read `AZURE_API_KEY`/`AZURE_API_BASE`/`AZURE_API_VERSION`,
+mapped from the repo's `AZURE_OPENAI_*`); `d_` LangChain tool-agent traced by one-line
+`mlflow.langchain.autolog()` (stack verified live on Ollama). `b_`–`d_` need full runs to
+capture outputs. `e_`–`g_` planned.
 
 | # | Notebook | Teaches | Parallels (ml) |
 |---|----------|---------|----------------|
-| a | `a_tracing_quickstart` | The Traces tab lights up: `mlflow.openai.autolog()` against Ollama's OpenAI-compatible endpoint + a manual `@mlflow.trace`. Spans = inputs/outputs/latency. | the basics quickstart |
-| b | `b_tracing_a_multistep_app` | A small RAG / tool-using chain: nested spans, framework autolog (LangChain or LlamaIndex). *Why* tracing matters. | — |
-| c | `c_genai_evaluation` | `mlflow.genai.evaluate()` with LLM-as-judge scorers (correctness, relevance, groundedness, guidelines) + a custom scorer; eval datasets. | `e_model_evaluation` |
-| d | `d_prompt_registry` | `register_prompt`, prompt versions + aliases, compare in the UI, load by alias, evaluate prompt versions. | `f_model_registry` |
-| e | `e_genai_app_serving` (advanced) | Log a GenAI app/agent (models-from-code / `ResponsesAgent`) and serve it. | `g_model_serving` |
-| f | `f_feedback_and_monitoring` (stretch) | Human feedback / assessments on traces; production-monitoring scorers on live traffic. | — |
+| a | `a_tracing_quickstart` ✅ | The Traces tab lights up: `mlflow.openai.autolog()` against Ollama's OpenAI-compatible endpoint + a manual `@mlflow.trace`. | the basics quickstart |
+| b | `b_tracing_a_multistep_app` ✅ | Hand-built RAG (no framework): nested `RETRIEVER`/`CHAIN`/`LLM` spans; the failure-diagnosis payoff. | — |
+| c | `c_genai_evaluation` ✅ | `mlflow.genai.evaluate()` with built-in + custom scorers; judge = `azure:/<deployment>`. | `e_model_evaluation` |
+| d | `d_langchain_agent` ✅ | A tool-using LangChain agent traced by one-line `mlflow.langchain.autolog()` — the framework alternative to `b_`'s manual spans, on a runtime-decided agent loop. | — |
+| e | `e_prompt_registry` | `register_prompt`, versions + aliases, compare in the UI, evaluate prompt versions. | `f_model_registry` |
+| f | `f_genai_app_serving` (advanced) | Log a GenAI app/agent (models-from-code) and serve it. | `g_model_serving` |
+| g | `g_feedback_and_monitoring` (stretch) | Human feedback / assessments on traces; production-monitoring scorers. | — |
+
+**Advanced / under discussion:**
+
+- **DSPy + MLflow optimization** (planned advanced, companion to `e_prompt_registry`): a DSPy
+  program MLflow *optimizes* (`mlflow.genai.optimize_prompts`) and traces via
+  `mlflow.dspy.autolog()` — the unique MLflow×framework pairing. Conceptually heavier, so it
+  sits beside the prompt-registry notebook, not as the intro framework notebook (`d_` fills
+  that with LangChain).
+- **LlamaIndex / Milvus RAG** *(for discussion — decide before building)*: a "production RAG"
+  notebook that swaps `b_`'s toy lexical retriever for a LlamaIndex `VectorStoreIndex` backed by
+  a **Milvus** vector store, traced by `mlflow.llama_index.autolog()`, with the retrieval
+  scorers (`RetrievalRelevance`/`RetrievalGroundedness`) from `c_`. **Pro:** real embeddings + a
+  real vector DB, end to end. **Con:** heavy deps (`llama-index`, a running Milvus, an embedding
+  model) and conceptual overlap with `b_`/`d_`. Open question: worth a full notebook, or a short
+  appendix to `b_`?
 
 **Editorial stance** (per the `mlflow-tutorial-improve` skill): lead with the *problem* (you
 can't put a number on "is this answer good?" → LLM-as-judge; you can't see inside a chain →
@@ -80,7 +96,7 @@ cross-link the `ml/` analog rather than re-teaching shared MLflow concepts.
 ```text
 basics/ (a_setup → b_tracking_quickstart)
    ├─► ml/      a_ … j_   ✅ complete
-   └─► gen_ai/  a_ ✅ → b_ (multistep, drafted) → c_ (eval, drafted) → d_ (prompts) → e_ (serving)   🔧
+   └─► gen_ai/  a_ ✅ → b_ → c_ → d_ (langchain agent) → e_ (prompts) → f_ (serving) → g_ (feedback)   🔧
                 b_ (multistep) and f_ (feedback) are enrichment, not blockers
 ```
 

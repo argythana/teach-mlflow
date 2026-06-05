@@ -44,19 +44,26 @@ Build one at a time, executed live against a local Ollama model. Sequence:
 | a | `a_tracing_quickstart` ✅ drafted | The Traces tab lights up. Ollama prereq + `mlflow.openai.autolog()` against Ollama's OpenAI-compatible endpoint + a manual `@mlflow.trace`. Spans = inputs/outputs/latency. **Authored, no outputs yet — needs a live run.** | the basics quickstart |
 | b | `b_tracing_a_multistep_app` ✅ drafted | Hand-built RAG (no framework): a traced `RETRIEVER` span + `CHAIN` root + autologged `LLM` span; the failure-diagnosis payoff. Notes framework autolog as the one-line alternative. Needs a live run. | — |
 | c | `c_genai_evaluation` ✅ drafted | `mlflow.genai.evaluate()` with built-in judges (RelevanceToQuery, Guidelines, Correctness) + a custom `@scorer` + a `predict_fn` app. **Judge = `azure:/<deployment>`** via MLflow's native azure provider (map `AZURE_OPENAI_*` → `AZURE_API_KEY`/`AZURE_API_BASE`/`AZURE_API_VERSION`; no litellm). Smoke-tested live; needs a full run. | `e_model_evaluation` |
-| d | `d_prompt_registry` | `register_prompt`, prompt versions + aliases, compare in the UI, load by alias, evaluate prompt versions. | `f_model_registry` |
-| e | `e_genai_app_serving` (advanced) | Log a GenAI app/agent (models-from-code / `ResponsesAgent`), serve it, the deployment story. | `g_model_serving` |
-| f | `f_feedback_and_monitoring` (stretch) | Human feedback / assessments on traces; production-monitoring scorers on live traffic. | — |
+| d | `d_langchain_agent` ✅ drafted | Tool-using LangChain agent (`langchain.agents.create_agent`, langchain v1) on Ollama, traced by one-line `mlflow.langchain.autolog()` — the framework alternative to `b_`'s manual spans. Stack verified live (multi-step tool chain → correct answer, traced). Needs a full run. | — |
+| e | `e_prompt_registry` | `register_prompt`, prompt versions + aliases, compare in the UI, load by alias, evaluate prompt versions. | `f_model_registry` |
+| f | `f_genai_app_serving` (advanced) | Log a GenAI app/agent (models-from-code / `ResponsesAgent`), serve it, the deployment story. Logs the `d_` agent. | `g_model_serving` |
+| g | `g_feedback_and_monitoring` (stretch) | Human feedback / assessments on traces; production-monitoring scorers on live traffic. | — |
+
+**Advanced / discussion (added on request):**
+- **DSPy** — advanced companion to `e_prompt_registry`: `mlflow.dspy.autolog()` + `mlflow.genai.optimize_prompts`. Build after the prompt registry.
+- **LlamaIndex / Milvus RAG** — *for discussion*: real RAG (vector store + embeddings) vs `b_`'s toy retriever. Heavy deps; decide whether it's a full notebook or a `b_` appendix before building.
 
 **Editorial stance** (per the `mlflow-tutorial-improve` skill): lead with the *problem*,
 define GenAI jargon once (span, trace, scorer, judge, prompt version), cross-link the `ml/`
 analog instead of re-teaching shared MLflow concepts.
 
-**Dependencies:** the `openai` client (used against Ollama too) is **added** (`uv add openai`).
-Still to add as their notebooks land: optionally `langchain` / `llama-index` for the
-multistep notebook. **Ollama is a documented system prerequisite**, not
-a Python dependency — a first cell should explain installing it and pulling a small model.
+**Dependencies:** **added** — `openai` (used against Ollama too), `python-dotenv`, and the
+LangChain v1 stack (`langchain`, `langchain-openai`, `langgraph`) for `d_`. Still to add as
+their notebooks land: `dspy` (DSPy advanced), and — if the LlamaIndex/Milvus RAG notebook is
+approved — `llama-index` + a Milvus client. **Ollama is a documented system prerequisite**, not
+a Python dependency.
 
 ## Build order
-`a_tracing_quickstart` first (it's the entry point and where the Traces tab finally fills),
-then `c_` → `d_` → `e_`. `b_` (multistep) and `f_` (feedback) are enrichment, not blockers.
+`a_` → `b_` → `c_` → `d_` are built and contiguous. Next: `e_prompt_registry`, then
+`f_genai_app_serving` (logs/serves the `d_` agent). `g_feedback` is a stretch. DSPy and the
+LlamaIndex/Milvus RAG are advanced/under-discussion items above.
