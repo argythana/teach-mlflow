@@ -41,7 +41,7 @@ Build one at a time, executed live against a local Ollama model. Sequence:
 
 | # | Notebook | Teaches | Parallels (ml) |
 |---|----------|---------|----------------|
-| a | `a_tracing_quickstart` | The Traces tab lights up. Ollama prereq + `mlflow.openai.autolog()` against Ollama's OpenAI-compatible endpoint + a manual `@mlflow.trace`. Spans = inputs/outputs/latency. | the basics quickstart |
+| a | `a_tracing_quickstart` ✅ drafted | The Traces tab lights up. Ollama prereq + `mlflow.openai.autolog()` against Ollama's OpenAI-compatible endpoint + a manual `@mlflow.trace`. Spans = inputs/outputs/latency. **Authored, no outputs yet — needs a live run.** | the basics quickstart |
 | b | `b_tracing_a_multistep_app` | A small RAG / tool-using chain: nested spans, framework autolog (LangChain or LlamaIndex). *Why* tracing matters — see inside a chain. | — |
 | c | `c_genai_evaluation` | `mlflow.genai.evaluate()` with LLM-as-judge scorers (correctness, relevance, groundedness, guidelines) + a custom scorer; eval datasets. | `e_model_evaluation` |
 | d | `d_prompt_registry` | `register_prompt`, prompt versions + aliases, compare in the UI, load by alias, evaluate prompt versions. | `f_model_registry` |
@@ -52,9 +52,9 @@ Build one at a time, executed live against a local Ollama model. Sequence:
 define GenAI jargon once (span, trace, scorer, judge, prompt version), cross-link the `ml/`
 analog instead of re-teaching shared MLflow concepts.
 
-**Dependencies (add via `uv add` when the first notebook is built, not before):** `mlflow`
-GenAI extras, the `openai` client (used against Ollama too), optionally `langchain` /
-`llama-index` for the multistep notebook. **Ollama is a documented system prerequisite**, not
+**Dependencies:** the `openai` client (used against Ollama too) is **added** (`uv add openai`).
+Still to add as their notebooks land: optionally `langchain` / `llama-index` for the
+multistep notebook. **Ollama is a documented system prerequisite**, not
 a Python dependency — a first cell should explain installing it and pulling a small model.
 
 ## Build order

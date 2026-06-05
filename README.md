@@ -32,14 +32,18 @@ Notebooks are grouped by track. Each folder is prefixed `a_`, `b_`, `c_`, … so
 
 That completes the traditional-ML MLOps spine (tracking → evaluation → registry → serving).
 
-**`gen_ai/` — GenAI / LLM track** (planned): tracing, LLM-as-judge evaluation, and the prompt registry — this is where the MLflow **Traces** tab lights up. See `roadmap/` for the plan.
+**`gen_ai/` — GenAI / LLM track** (in progress; local server on port `5001` plus a local [Ollama](https://ollama.com) model): tracing, LLM-as-judge evaluation, and the prompt registry — where the MLflow **Traces** tab lights up.
+
+- `a_tracing_quickstart` — automatic and manual tracing (`mlflow.openai.autolog()`, `@mlflow.trace`) against a local Ollama model; spans, traces, and the Traces tab.
+
+See `roadmap/` for the rest of the planned sequence.
 
 ## Start the MLflow tracking server first
 
-Every notebook assumes a local MLflow tracking server is already running. **Before opening a notebook**, start it in a separate terminal from the repo root, on the port that notebook expects — the `basics/` notebooks use `5000`, the `ml/` track uses `5001`, and the first cell of each notebook states which:
+Every notebook assumes a local MLflow tracking server is already running. **Before opening a notebook**, start it in a separate terminal from the repo root, on the port that notebook expects — the `basics/` notebooks use `5000`, the `ml/` and `gen_ai/` tracks use `5001`, and the first cell of each notebook states which:
 
 ```bash
-mlflow ui --host 127.0.0.1 --port 5000   # use 5001 for the ml/ track
+mlflow ui --host 127.0.0.1 --port 5000   # use 5001 for the ml/ and gen_ai/ tracks
 ```
 
 Leave it running and open the UI at the matching address (e.g. <http://127.0.0.1:5000>). In MLflow 3 this creates a `mlflow.db` (the SQLite backend store) and an `mlartifacts/` directory next to wherever you started the server — running it from the repo root keeps them tidy. Both are per-developer runtime state and are gitignored.

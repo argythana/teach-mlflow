@@ -41,11 +41,15 @@ capstone that threads them together. Spine dataset: California housing (`fetch_c
 ~20 k rows); synthetic `make_regression` only where scale is the lesson (`i_system_metrics`).
 Aliases, not deprecated stage transitions, throughout.
 
-## `gen_ai/` — GenAI / LLM track 🔜 planned
+## `gen_ai/` — GenAI / LLM track 🔧 in progress
 
 **LLM backend (decided):** teach against a **local Ollama** model (zero cost, no API key —
 fits the "students with no budget" audience) and show the one-line swap to the **OpenAI API**.
 Ollama is a documented *system prerequisite*, like the tracking server — not a pip dependency.
+The `openai` client (which talks to both Ollama and OpenAI) is added to the project.
+
+**Status:** `a_tracing_quickstart` is **drafted** — needs a live run against Ollama + a server
+on port 5001. The rest of the sequence is planned.
 
 | # | Notebook | Teaches | Parallels (ml) |
 |---|----------|---------|----------------|
@@ -66,7 +70,7 @@ cross-link the `ml/` analog rather than re-teaching shared MLflow concepts.
 ```text
 basics/ (a_setup → b_tracking_quickstart)
    ├─► ml/      a_ … j_   ✅ complete
-   └─► gen_ai/  a_ (tracing) → c_ (eval) → d_ (prompts) → e_ (serving)   🔜
+   └─► gen_ai/  a_ (tracing, drafted) → c_ (eval) → d_ (prompts) → e_ (serving)   🔧
                 b_ (multistep) and f_ (feedback) are enrichment, not blockers
 ```
 
