@@ -18,26 +18,29 @@ order:
 | # | Notebook | Topic |
 |---|----------|-------|
 | a | `a_setup_mlflow` | Install, `mlflow ui` vs `server`, tracking URI, start the server, the UI (incl. the Traces-tab orientation note). |
-| b | `b_tracking_quickstart` | Experiments, runs, log params/metrics/model, load back as a pyfunc; the three stores; `skops` serialization; one-line `autolog`. GenAI readers skim the sklearn half. |
+| b | `b_tracking_quickstart` | Experiments, runs, log params/metrics/model, load back as a pyfunc; the three stores. GenAI readers skim the sklearn worked example. |
 
-## `ml/` — traditional-ML track ✅ complete (port 5001)
+## `ml/` — traditional-ML track (port 5001)
+
+Complete, except `a_model_logging` (newly split out of `b_tracking_quickstart`) still needs a live run to populate its outputs.
 
 | # | Notebook | Topic |
 |---|----------|-------|
-| a | `a_hyperparameter_tuning` | Optuna sweep, parent/child runs, first registry touch |
-| b | `b_logging_plots` | `mlflow.log_figure` across a sweep |
-| c | `c_logging_callbacks` | XGBoost + Optuna callbacks; parent metric history vs stdout |
-| d | `d_model_evaluation` | `mlflow.models.evaluate()`, custom metrics, validation gates |
-| e | `e_model_registry` | Versions, `@champion`/`@challenger` aliases, promotion, rollback |
-| f | `f_model_serving` | `mlflow models serve`, `/invocations`, signature enforcement, Docker |
-| g | `g_dataset_logging` | `mlflow.data` + `log_input`, raw vs engineered, digests |
-| h | `h_system_metrics` | `system/*` observability (CPU/RAM/GPU) under load |
-| i | `i_capstone_end_to_end` | One model through the full lifecycle on one dataset |
+| a | `a_model_logging` | Safe `skops` serialization + one-line `mlflow.sklearn.autolog()` (split out of `basics/b_`) |
+| b | `b_hyperparameter_tuning` | Optuna sweep, parent/child runs, first registry touch |
+| c | `c_logging_plots` | `mlflow.log_figure` across a sweep |
+| d | `d_logging_callbacks` | XGBoost + Optuna callbacks; parent metric history vs stdout |
+| e | `e_model_evaluation` | `mlflow.models.evaluate()`, custom metrics, validation gates |
+| f | `f_model_registry` | Versions, `@champion`/`@challenger` aliases, promotion, rollback |
+| g | `g_model_serving` | `mlflow models serve`, `/invocations`, signature enforcement, Docker |
+| h | `h_dataset_logging` | `mlflow.data` + `log_input`, raw vs engineered, digests |
+| i | `i_system_metrics` | `system/*` observability (CPU/RAM/GPU) under load |
+| j | `j_capstone_end_to_end` | One model through the full lifecycle on one dataset |
 
 The traditional-ML MLOps spine is built end to end: **track → evaluate & gate → register &
 promote → serve**, with dataset lineage and resource observability as standalone topics and a
 capstone that threads them together. Spine dataset: California housing (`fetch_california_housing`,
-~20 k rows); synthetic `make_regression` only where scale is the lesson (`h_system_metrics`).
+~20 k rows); synthetic `make_regression` only where scale is the lesson (`i_system_metrics`).
 Aliases, not deprecated stage transitions, throughout.
 
 ## `gen_ai/` — GenAI / LLM track 🔜 planned
@@ -50,9 +53,9 @@ Ollama is a documented *system prerequisite*, like the tracking server — not a
 |---|----------|---------|----------------|
 | a | `a_tracing_quickstart` | The Traces tab lights up: `mlflow.openai.autolog()` against Ollama's OpenAI-compatible endpoint + a manual `@mlflow.trace`. Spans = inputs/outputs/latency. | the basics quickstart |
 | b | `b_tracing_a_multistep_app` | A small RAG / tool-using chain: nested spans, framework autolog (LangChain or LlamaIndex). *Why* tracing matters. | — |
-| c | `c_genai_evaluation` | `mlflow.genai.evaluate()` with LLM-as-judge scorers (correctness, relevance, groundedness, guidelines) + a custom scorer; eval datasets. | `d_model_evaluation` |
-| d | `d_prompt_registry` | `register_prompt`, prompt versions + aliases, compare in the UI, load by alias, evaluate prompt versions. | `e_model_registry` |
-| e | `e_genai_app_serving` (advanced) | Log a GenAI app/agent (models-from-code / `ResponsesAgent`) and serve it. | `f_model_serving` |
+| c | `c_genai_evaluation` | `mlflow.genai.evaluate()` with LLM-as-judge scorers (correctness, relevance, groundedness, guidelines) + a custom scorer; eval datasets. | `e_model_evaluation` |
+| d | `d_prompt_registry` | `register_prompt`, prompt versions + aliases, compare in the UI, load by alias, evaluate prompt versions. | `f_model_registry` |
+| e | `e_genai_app_serving` (advanced) | Log a GenAI app/agent (models-from-code / `ResponsesAgent`) and serve it. | `g_model_serving` |
 | f | `f_feedback_and_monitoring` (stretch) | Human feedback / assessments on traces; production-monitoring scorers on live traffic. | — |
 
 **Editorial stance** (per the `mlflow-tutorial-improve` skill): lead with the *problem* (you
@@ -64,7 +67,7 @@ cross-link the `ml/` analog rather than re-teaching shared MLflow concepts.
 
 ```text
 basics/ (a_setup → b_tracking_quickstart)
-   ├─► ml/      a_ … i_   ✅ complete
+   ├─► ml/      a_ … j_   ✅ complete (a_model_logging pending a live run)
    └─► gen_ai/  a_ (tracing) → c_ (eval) → d_ (prompts) → e_ (serving)   🔜
                 b_ (multistep) and f_ (feedback) are enrichment, not blockers
 ```
