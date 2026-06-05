@@ -20,9 +20,7 @@ order:
 | a | `a_setup_mlflow` | Install, `mlflow ui` vs `server`, tracking URI, start the server, the UI (incl. the Traces-tab orientation note). |
 | b | `b_tracking_quickstart` | Experiments, runs, log params/metrics/model, load back as a pyfunc; the three stores. GenAI readers skim the sklearn worked example. |
 
-## `ml/` — traditional-ML track (port 5001)
-
-Complete, except `a_model_logging` (newly split out of `b_tracking_quickstart`) still needs a live run to populate its outputs.
+## `ml/` — traditional-ML track ✅ complete (port 5001)
 
 | # | Notebook | Topic |
 |---|----------|-------|
@@ -67,7 +65,7 @@ cross-link the `ml/` analog rather than re-teaching shared MLflow concepts.
 
 ```text
 basics/ (a_setup → b_tracking_quickstart)
-   ├─► ml/      a_ … j_   ✅ complete (a_model_logging pending a live run)
+   ├─► ml/      a_ … j_   ✅ complete
    └─► gen_ai/  a_ (tracing) → c_ (eval) → d_ (prompts) → e_ (serving)   🔜
                 b_ (multistep) and f_ (feedback) are enrichment, not blockers
 ```

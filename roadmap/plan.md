@@ -32,9 +32,8 @@ now live in `src/basics/`.
   "What's next" branch (basics → `ml/` / `gen_ai/`); updated the `b_` skim note.
 - Created this `roadmap/` folder.
 
-**Needs a live run:** `ml/a_model_logging` was authored from moved cells and has no outputs
-yet — run it against a server on port 5001. `basics/b_` should also be re-run so its outputs
-reflect the removed autolog section.
+- Ran `ml/a_model_logging` (port 5001) and re-ran `basics/b_` so outputs reflect the split.
+  The `ml/` track is now complete end to end.
 
 ## To build — GenAI notebooks (`src/gen_ai/`)
 
