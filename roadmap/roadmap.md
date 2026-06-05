@@ -58,7 +58,8 @@ point. Lighter alt: `gemma3:4b`.
 `c_genai_evaluation` **drafted** — LLM-as-judge via MLflow's native `azure:/` provider (no
 `litellm` needed; judges read `AZURE_API_KEY`/`AZURE_API_BASE`/`AZURE_API_VERSION`, mapped from
 the repo's `AZURE_OPENAI_*`). Smoke-tested live; needs a full run. `b_tracing_a_multistep_app`
-is the remaining gap before `c_`; `d_`/`e_` planned.
+**drafted** — a hand-built RAG (no framework) showing nested `RETRIEVER`/`CHAIN`/`LLM` spans.
+`gen_ai/` is now contiguous `a_`–`c_`; `d_`/`e_` planned.
 
 | # | Notebook | Teaches | Parallels (ml) |
 |---|----------|---------|----------------|
@@ -79,7 +80,7 @@ cross-link the `ml/` analog rather than re-teaching shared MLflow concepts.
 ```text
 basics/ (a_setup → b_tracking_quickstart)
    ├─► ml/      a_ … j_   ✅ complete
-   └─► gen_ai/  a_ (tracing ✅) → c_ (eval, drafted) → d_ (prompts) → e_ (serving)   🔧
+   └─► gen_ai/  a_ ✅ → b_ (multistep, drafted) → c_ (eval, drafted) → d_ (prompts) → e_ (serving)   🔧
                 b_ (multistep) and f_ (feedback) are enrichment, not blockers
 ```
 

@@ -42,7 +42,7 @@ Build one at a time, executed live against a local Ollama model. Sequence:
 | # | Notebook | Teaches | Parallels (ml) |
 |---|----------|---------|----------------|
 | a | `a_tracing_quickstart` ✅ drafted | The Traces tab lights up. Ollama prereq + `mlflow.openai.autolog()` against Ollama's OpenAI-compatible endpoint + a manual `@mlflow.trace`. Spans = inputs/outputs/latency. **Authored, no outputs yet — needs a live run.** | the basics quickstart |
-| b | `b_tracing_a_multistep_app` | A small RAG / tool-using chain: nested spans, framework autolog (LangChain or LlamaIndex). *Why* tracing matters — see inside a chain. | — |
+| b | `b_tracing_a_multistep_app` ✅ drafted | Hand-built RAG (no framework): a traced `RETRIEVER` span + `CHAIN` root + autologged `LLM` span; the failure-diagnosis payoff. Notes framework autolog as the one-line alternative. Needs a live run. | — |
 | c | `c_genai_evaluation` ✅ drafted | `mlflow.genai.evaluate()` with built-in judges (RelevanceToQuery, Guidelines, Correctness) + a custom `@scorer` + a `predict_fn` app. **Judge = `azure:/<deployment>`** via MLflow's native azure provider (map `AZURE_OPENAI_*` → `AZURE_API_KEY`/`AZURE_API_BASE`/`AZURE_API_VERSION`; no litellm). Smoke-tested live; needs a full run. | `e_model_evaluation` |
 | d | `d_prompt_registry` | `register_prompt`, prompt versions + aliases, compare in the UI, load by alias, evaluate prompt versions. | `f_model_registry` |
 | e | `e_genai_app_serving` (advanced) | Log a GenAI app/agent (models-from-code / `ResponsesAgent`), serve it, the deployment story. | `g_model_serving` |
