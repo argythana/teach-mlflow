@@ -2694,6 +2694,7 @@ dependencies = [
     { name = "openai" },
     { name = "optuna" },
     { name = "pandas" },
+    { name = "python-dotenv" },
     { name = "scikit-learn" },
     { name = "seaborn" },
     { name = "skops" },
@@ -2713,6 +2714,7 @@ requires-dist = [
     { name = "openai", specifier = ">=2.41.0" },
     { name = "optuna", specifier = ">=4.8.0" },
     { name = "pandas", specifier = ">=2.3.3" },
+    { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "scikit-learn", specifier = ">=1.8.0" },
     { name = "seaborn", specifier = ">=0.13.2" },
     { name = "skops", specifier = ">=0.14.0" },
@@ -2720,7 +2722,7 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "huggingface-hub", extras = ["cli"], specifier = ">=1.17.0" }]
+dev = [{ name = "huggingface-hub", specifier = ">=1.17.0" }]
 
 [[package]]
 name = "terminado"

@@ -11,6 +11,7 @@ dependencies = [
     "openai>=2.41.0",
     "optuna>=4.8.0",
     "pandas>=2.3.3",
+    "python-dotenv>=1.2.2",
     "scikit-learn>=1.8.0",
     "seaborn>=0.13.2",
     "skops>=0.14.0",
@@ -19,5 +20,5 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "huggingface-hub[cli]>=1.17.0",
+    "huggingface-hub>=1.17.0",
 ]
