@@ -54,12 +54,12 @@ The `openai` client (which talks to both Ollama and OpenAI) is added to the proj
 model — notebooks append `/no_think` for clean, fast traces and turn thinking on where it's the
 point. Lighter alt: `gemma3:4b`.
 
-**Status:** `a_`–`e_` **drafted and contiguous**. `a_tracing_quickstart` ✅ verified (Ollama +
+**Status:** `a_`–`f_` **drafted and contiguous**. `a_tracing_quickstart` ✅ verified (Ollama +
 Azure). `b_` hand-built RAG; `c_` LLM-as-judge (Azure judge via MLflow's native `azure:/`
 provider — no `litellm`; judges read `AZURE_API_KEY`/`AZURE_API_BASE`/`AZURE_API_VERSION`,
 mapped from the repo's `AZURE_OPENAI_*`); `d_` LangChain tool-agent traced by one-line
 `mlflow.langchain.autolog()` (stack verified live on Ollama). `e_` is the prompt registry (register/version/alias + promote the winning version with the
-`c_` judge). `b_`–`e_` need full runs to capture outputs. `f_`–`g_` planned.
+`c_` judge). `f_` serves a GenAI app over REST (models-from-code; full flow log→load→serve→curl verified live). `b_`–`f_` need full runs to capture outputs. `g_` (feedback) planned.
 
 | # | Notebook | Teaches | Parallels (ml) |
 |---|----------|---------|----------------|
@@ -68,7 +68,7 @@ mapped from the repo's `AZURE_OPENAI_*`); `d_` LangChain tool-agent traced by on
 | c | `c_genai_evaluation` ✅ | `mlflow.genai.evaluate()` with built-in + custom scorers; judge = `azure:/<deployment>`. | `e_model_evaluation` |
 | d | `d_langchain_agent` ✅ | A tool-using LangChain agent traced by one-line `mlflow.langchain.autolog()` — the framework alternative to `b_`'s manual spans, on a runtime-decided agent loop. | — |
 | e | `e_prompt_registry` ✅ | `register_prompt`, versions + aliases, load by alias, and promote the version that wins the `c_` LLM-as-judge comparison. | `f_model_registry` |
-| f | `f_genai_app_serving` (advanced) | Log a GenAI app/agent (models-from-code) and serve it. | `g_model_serving` |
+| f | `f_genai_app_serving` ✅ | Log a GenAI app via models-from-code, `mlflow models serve` it on 5002, curl `/invocations`; the served app loads `qa-answer@production` per request, so prompt promotion ships with no redeploy. | `g_model_serving` |
 | g | `g_feedback_and_monitoring` (stretch) | Human feedback / assessments on traces; production-monitoring scorers. | — |
 
 **Advanced / under discussion:**
@@ -97,7 +97,7 @@ cross-link the `ml/` analog rather than re-teaching shared MLflow concepts.
 basics/ (a_setup → b_tracking_quickstart)
    ├─► ml/      a_ … j_   ✅ complete
    └─► gen_ai/  a_ ✅ → b_ → c_ → d_ → e_ (prompts) → f_ (serving) → g_ (feedback)   🔧
-                a_–e_ built; f_ serving next; g_ feedback is a stretch
+                a_–f_ built; g_ feedback is a stretch
 ```
 
 ## Beyond this roadmap (not yet planned)
