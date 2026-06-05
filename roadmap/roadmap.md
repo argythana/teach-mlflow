@@ -54,12 +54,12 @@ The `openai` client (which talks to both Ollama and OpenAI) is added to the proj
 model — notebooks append `/no_think` for clean, fast traces and turn thinking on where it's the
 point. Lighter alt: `gemma3:4b`.
 
-**Status:** `a_`–`d_` **drafted and contiguous**. `a_tracing_quickstart` ✅ verified (Ollama +
+**Status:** `a_`–`e_` **drafted and contiguous**. `a_tracing_quickstart` ✅ verified (Ollama +
 Azure). `b_` hand-built RAG; `c_` LLM-as-judge (Azure judge via MLflow's native `azure:/`
 provider — no `litellm`; judges read `AZURE_API_KEY`/`AZURE_API_BASE`/`AZURE_API_VERSION`,
 mapped from the repo's `AZURE_OPENAI_*`); `d_` LangChain tool-agent traced by one-line
-`mlflow.langchain.autolog()` (stack verified live on Ollama). `b_`–`d_` need full runs to
-capture outputs. `e_`–`g_` planned.
+`mlflow.langchain.autolog()` (stack verified live on Ollama). `e_` is the prompt registry (register/version/alias + promote the winning version with the
+`c_` judge). `b_`–`e_` need full runs to capture outputs. `f_`–`g_` planned.
 
 | # | Notebook | Teaches | Parallels (ml) |
 |---|----------|---------|----------------|
@@ -67,7 +67,7 @@ capture outputs. `e_`–`g_` planned.
 | b | `b_tracing_a_multistep_app` ✅ | Hand-built RAG (no framework): nested `RETRIEVER`/`CHAIN`/`LLM` spans; the failure-diagnosis payoff. | — |
 | c | `c_genai_evaluation` ✅ | `mlflow.genai.evaluate()` with built-in + custom scorers; judge = `azure:/<deployment>`. | `e_model_evaluation` |
 | d | `d_langchain_agent` ✅ | A tool-using LangChain agent traced by one-line `mlflow.langchain.autolog()` — the framework alternative to `b_`'s manual spans, on a runtime-decided agent loop. | — |
-| e | `e_prompt_registry` | `register_prompt`, versions + aliases, compare in the UI, evaluate prompt versions. | `f_model_registry` |
+| e | `e_prompt_registry` ✅ | `register_prompt`, versions + aliases, load by alias, and promote the version that wins the `c_` LLM-as-judge comparison. | `f_model_registry` |
 | f | `f_genai_app_serving` (advanced) | Log a GenAI app/agent (models-from-code) and serve it. | `g_model_serving` |
 | g | `g_feedback_and_monitoring` (stretch) | Human feedback / assessments on traces; production-monitoring scorers. | — |
 
@@ -96,7 +96,7 @@ cross-link the `ml/` analog rather than re-teaching shared MLflow concepts.
 ```text
 basics/ (a_setup → b_tracking_quickstart)
    ├─► ml/      a_ … j_   ✅ complete
-   └─► gen_ai/  a_ ✅ → b_ → c_ → d_ (langchain agent) → e_ (prompts) → f_ (serving) → g_ (feedback)   🔧
+   └─► gen_ai/  a_ ✅ → b_ → c_ → d_ → e_ (prompts) → f_ (serving) → g_ (feedback)   🔧
                 b_ (multistep) and f_ (feedback) are enrichment, not blockers
 ```
 
