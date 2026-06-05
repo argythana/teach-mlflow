@@ -45,7 +45,7 @@ In MLflow 3+ this creates `mlflow.db` (SQLite backend store) and an `mlartifacts
 
 - `src/` — adapted MLflow tutorial notebooks, grouped by track and ordered with `a_`, `b_`, `c_` prefixes so the intended reading sequence is obvious from `ls`. Each notebook stays close to the upstream original but adds prerequisites, terminology, and "why this feature exists" context per the [Teaching philosophy](#teaching-philosophy) above.
   - `src/basics/` — track-agnostic foundations both tracks build on (`a_setup_mlflow`, `b_tracking_quickstart`).
-  - `src/ml/` — the traditional-ML track (`a_hyperparameter_tuning` … `i_capstone_end_to_end`): tuning, plots, evaluation, registry, serving, dataset logging, system metrics, capstone.
+  - `src/ml/` — the traditional-ML track (`a_model_logging` … `j_capstone_end_to_end`): model logging, tuning, plots, evaluation, registry, serving, dataset logging, system metrics, capstone.
   - `src/gen_ai/` — the GenAI / LLM track (tracing, LLM-as-judge evaluation, prompt registry). In progress.
 - `roadmap/` — the master roadmap summary (`roadmap.md`) and the build-out plan (`plan.md`).
 - `README.md` — audience, motivation, and setup for readers of the repo.

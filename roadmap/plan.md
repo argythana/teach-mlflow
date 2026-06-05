@@ -23,11 +23,18 @@ now live in `src/basics/`.
 ## Done (this restructure)
 
 - Created `src/basics/`; moved `a_setup_mlflow` + `b_tracking_quickstart` there.
-- Renumbered the traditional-ML notebooks `src/ml/` → `a_`–`i_`.
+- Split the scikit-learn–only material out of `basics/b_` into a new `ml/a_model_logging`
+  (safe `skops` serialization + `mlflow.sklearn.autolog()`); `basics/b_` keeps the shared
+  spine (experiments, params/metrics, `log_model`→pyfunc→predict, store layout) with a brief
+  skops pointer. Renumbered the rest of `src/ml/` → `b_`–`j_`.
 - Swept every cross-reference + the docs (`README.md`, `CLAUDE.md`, the skill); updated
   `a_setup`'s Traces-tab note (GenAI is now an in-repo track, not "out of scope") and its
-  "What's next" branch (basics → `ml/` / `gen_ai/`); added the `b_` skim note.
+  "What's next" branch (basics → `ml/` / `gen_ai/`); updated the `b_` skim note.
 - Created this `roadmap/` folder.
+
+**Needs a live run:** `ml/a_model_logging` was authored from moved cells and has no outputs
+yet — run it against a server on port 5001. `basics/b_` should also be re-run so its outputs
+reflect the removed autolog section.
 
 ## To build — GenAI notebooks (`src/gen_ai/`)
 
@@ -37,9 +44,9 @@ Build one at a time, executed live against a local Ollama model. Sequence:
 |---|----------|---------|----------------|
 | a | `a_tracing_quickstart` | The Traces tab lights up. Ollama prereq + `mlflow.openai.autolog()` against Ollama's OpenAI-compatible endpoint + a manual `@mlflow.trace`. Spans = inputs/outputs/latency. | the basics quickstart |
 | b | `b_tracing_a_multistep_app` | A small RAG / tool-using chain: nested spans, framework autolog (LangChain or LlamaIndex). *Why* tracing matters — see inside a chain. | — |
-| c | `c_genai_evaluation` | `mlflow.genai.evaluate()` with LLM-as-judge scorers (correctness, relevance, groundedness, guidelines) + a custom scorer; eval datasets. | `d_model_evaluation` |
-| d | `d_prompt_registry` | `register_prompt`, prompt versions + aliases, compare in the UI, load by alias, evaluate prompt versions. | `e_model_registry` |
-| e | `e_genai_app_serving` (advanced) | Log a GenAI app/agent (models-from-code / `ResponsesAgent`), serve it, the deployment story. | `f_model_serving` |
+| c | `c_genai_evaluation` | `mlflow.genai.evaluate()` with LLM-as-judge scorers (correctness, relevance, groundedness, guidelines) + a custom scorer; eval datasets. | `e_model_evaluation` |
+| d | `d_prompt_registry` | `register_prompt`, prompt versions + aliases, compare in the UI, load by alias, evaluate prompt versions. | `f_model_registry` |
+| e | `e_genai_app_serving` (advanced) | Log a GenAI app/agent (models-from-code / `ResponsesAgent`), serve it, the deployment story. | `g_model_serving` |
 | f | `f_feedback_and_monitoring` (stretch) | Human feedback / assessments on traces; production-monitoring scorers on live traffic. | — |
 
 **Editorial stance** (per the `mlflow-tutorial-improve` skill): lead with the *problem*,

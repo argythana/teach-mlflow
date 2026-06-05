@@ -15,19 +15,20 @@ Notebooks are grouped by track. Each folder is prefixed `a_`, `b_`, `c_`, … so
 **`basics/` — shared foundations** (local server on port `5000`), the starting point for either track:
 
 - `a_setup_mlflow` — what MLflow solves; `mlflow ui` vs `mlflow server`; connecting a notebook to a tracking server.
-- `b_tracking_quickstart` — log a model, parameters, and metrics; the three stores (backend / artifact / registry); safe serialization with `skops`.
+- `b_tracking_quickstart` — log a model, parameters, and metrics; the three stores (backend / artifact / registry); loading a model back as a `pyfunc`.
 
 **`ml/` — traditional-ML track** (local server on port `5001`):
 
-- `a_hyperparameter_tuning` — an Optuna sweep with parent/child runs, and a first look at the model registry.
-- `b_logging_plots` — log EDA and diagnostic figures across a sweep with `mlflow.log_figure`.
-- `c_logging_callbacks` — XGBoost + Optuna callbacks; parent-run metric history vs stdout heartbeats.
-- `d_model_evaluation` — `mlflow.evaluate()`, custom metrics, and validation gates (CI for models).
-- `e_model_registry` — versions, `@champion` / `@challenger` aliases, the promotion lifecycle, and rollback.
-- `f_model_serving` — serve a registered model over REST with `mlflow models serve`; the `/invocations` contract, signature enforcement, and the container path.
-- `g_dataset_logging` — `mlflow.data` + `log_input` for dataset lineage (raw vs engineered features, digests).
-- `h_system_metrics` — `system/*` resource observability (CPU / RAM / GPU) under a heavy training load.
-- `i_capstone_end_to_end` — one model through the full lifecycle: feature-engineer → tune → evaluate → gate → register → serve.
+- `a_model_logging` — logging scikit-learn models well: safe serialization with `skops`, and the one-line `mlflow.sklearn.autolog()`.
+- `b_hyperparameter_tuning` — an Optuna sweep with parent/child runs, and a first look at the model registry.
+- `c_logging_plots` — log EDA and diagnostic figures across a sweep with `mlflow.log_figure`.
+- `d_logging_callbacks` — XGBoost + Optuna callbacks; parent-run metric history vs stdout heartbeats.
+- `e_model_evaluation` — `mlflow.evaluate()`, custom metrics, and validation gates (CI for models).
+- `f_model_registry` — versions, `@champion` / `@challenger` aliases, the promotion lifecycle, and rollback.
+- `g_model_serving` — serve a registered model over REST with `mlflow models serve`; the `/invocations` contract, signature enforcement, and the container path.
+- `h_dataset_logging` — `mlflow.data` + `log_input` for dataset lineage (raw vs engineered features, digests).
+- `i_system_metrics` — `system/*` resource observability (CPU / RAM / GPU) under a heavy training load.
+- `j_capstone_end_to_end` — one model through the full lifecycle: feature-engineer → tune → evaluate → gate → register → serve.
 
 That completes the traditional-ML MLOps spine (tracking → evaluation → registry → serving).
 
