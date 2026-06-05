@@ -54,7 +54,7 @@ The `openai` client (which talks to both Ollama and OpenAI) is added to the proj
 model — notebooks append `/no_think` for clean, fast traces and turn thinking on where it's the
 point. Lighter alt: `gemma3:4b`.
 
-**Status:** `a_`–`g_` **drafted and contiguous** — the GenAI spine. `a_tracing_quickstart` ✅ verified (Ollama +
+**Status:** `a_`–`h_` **drafted and contiguous** — the GenAI spine plus `h_` (advanced: DSPy prompt optimization). `a_tracing_quickstart` ✅ verified (Ollama +
 Azure). `b_` hand-built RAG; `c_` LLM-as-judge (Azure judge via MLflow's native `azure:/`
 provider — no `litellm`; judges read `AZURE_API_KEY`/`AZURE_API_BASE`/`AZURE_API_VERSION`,
 mapped from the repo's `AZURE_OPENAI_*`); `d_` LangChain tool-agent traced by one-line
@@ -70,14 +70,15 @@ mapped from the repo's `AZURE_OPENAI_*`); `d_` LangChain tool-agent traced by on
 | e | `e_prompt_registry` ✅ | `register_prompt`, versions + aliases, load by alias, and promote the version that wins the `c_` LLM-as-judge comparison. | `f_model_registry` |
 | f | `f_genai_app_serving` ✅ | Log a GenAI app via models-from-code, `mlflow models serve` it on 5002, curl `/invocations`; the served app loads `qa-answer@production` per request, so prompt promotion ships with no redeploy. | `g_model_serving` |
 | g | `g_feedback_and_monitoring` ✅ | Human + code feedback on traces (`log_feedback`); LLM-judge monitoring over `search_traces` (OSS). Flags the Databricks-managed boundary. | — |
+| h | `h_dspy_optimization` (advanced) ✅ | A DSPy optimizer (`BootstrapFewShot`) auto-improves a prompt against a metric; `mlflow.dspy.autolog()` records every compile + saves the optimized program. Azure LM. The prompt analog of `ml/b_hyperparameter_tuning`. | `b_hyperparameter_tuning` |
 
 **Advanced / under discussion:**
 
-- **DSPy + MLflow optimization** (planned advanced, companion to `e_prompt_registry`): a DSPy
-  program MLflow *optimizes* (`mlflow.genai.optimize_prompts`) and traces via
-  `mlflow.dspy.autolog()` — the unique MLflow×framework pairing. Conceptually heavier, so it
-  sits beside the prompt-registry notebook, not as the intro framework notebook (`d_` fills
-  that with LangChain).
+- **DSPy prompt optimization — built as `h_dspy_optimization`.** Chose **DSPy over AdalFlow**
+  (a PyTorch-like textual-gradient optimizer): DSPy has first-class MLflow integration
+  (`mlflow.dspy.autolog()` autologs the optimization); AdalFlow is elegant for an ML audience
+  and Ollama-native, but its MLflow story isn't native, so it loses for an *MLflow* tutorial.
+  AdalFlow is noted in `h_` as the alternative paradigm.
 - **LlamaIndex / Milvus RAG** *(for discussion — decide before building)*: a "production RAG"
   notebook that swaps `b_`'s toy lexical retriever for a LlamaIndex `VectorStoreIndex` backed by
   a **Milvus** vector store, traced by `mlflow.llama_index.autolog()`, with the retrieval
@@ -97,7 +98,7 @@ cross-link the `ml/` analog rather than re-teaching shared MLflow concepts.
 basics/ (a_setup → b_tracking_quickstart)
    ├─► ml/      a_ … j_   ✅ complete
    └─► gen_ai/  a_ ✅ → b_ → c_ → d_ → e_ (prompts) → f_ (serving) → g_ (feedback)   🔧
-                a_–g_ built — the GenAI spine is complete (drafts)
+                a_–h_ built (g_ = spine end; h_ = advanced DSPy optimization)
 ```
 
 ## Beyond this roadmap (not yet planned)
