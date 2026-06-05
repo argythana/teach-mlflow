@@ -54,8 +54,11 @@ The `openai` client (which talks to both Ollama and OpenAI) is added to the proj
 model — notebooks append `/no_think` for clean, fast traces and turn thinking on where it's the
 point. Lighter alt: `gemma3:4b`.
 
-**Status:** `a_tracing_quickstart` is **drafted** — needs a live run against Ollama + a server
-on port 5001. The rest of the sequence is planned.
+**Status:** `a_tracing_quickstart` ✅ built & verified (Ollama + Azure backends).
+`c_genai_evaluation` **drafted** — LLM-as-judge via MLflow's native `azure:/` provider (no
+`litellm` needed; judges read `AZURE_API_KEY`/`AZURE_API_BASE`/`AZURE_API_VERSION`, mapped from
+the repo's `AZURE_OPENAI_*`). Smoke-tested live; needs a full run. `b_tracing_a_multistep_app`
+is the remaining gap before `c_`; `d_`/`e_` planned.
 
 | # | Notebook | Teaches | Parallels (ml) |
 |---|----------|---------|----------------|
@@ -76,7 +79,7 @@ cross-link the `ml/` analog rather than re-teaching shared MLflow concepts.
 ```text
 basics/ (a_setup → b_tracking_quickstart)
    ├─► ml/      a_ … j_   ✅ complete
-   └─► gen_ai/  a_ (tracing, drafted) → c_ (eval) → d_ (prompts) → e_ (serving)   🔧
+   └─► gen_ai/  a_ (tracing ✅) → c_ (eval, drafted) → d_ (prompts) → e_ (serving)   🔧
                 b_ (multistep) and f_ (feedback) are enrichment, not blockers
 ```
 
