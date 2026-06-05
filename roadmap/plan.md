@@ -47,7 +47,7 @@ Build one at a time, executed live against a local Ollama model. Sequence:
 | d | `d_langchain_agent` ✅ drafted | Tool-using LangChain agent (`langchain.agents.create_agent`, langchain v1) on Ollama, traced by one-line `mlflow.langchain.autolog()` — the framework alternative to `b_`'s manual spans. Stack verified live (multi-step tool chain → correct answer, traced). Needs a full run. | — |
 | e | `e_prompt_registry` ✅ drafted | `register_prompt` (auto-versions), `{{var}}` templates, `set_prompt_alias`, `load_prompt("prompts:/name@alias")`; compares v1 vs v2 by running each through Ollama and scoring with the `c_` Azure judge, then promotes the winner. API verified live. Needs a full run. | `f_model_registry` |
 | f | `f_genai_app_serving` ✅ drafted | models-from-code pyfunc (loads `qa-answer@production` per request) → `mlflow models serve -p 5002 --env-manager local` (needs `MLFLOW_TRACKING_URI` for the registry) → curl `/invocations`. Full flow verified live. Notes the `d_` agent serves the same way via `mlflow.langchain.log_model`. | `g_model_serving` |
-| g | `g_feedback_and_monitoring` (stretch) | Human feedback / assessments on traces; production-monitoring scorers on live traffic. | — |
+| g | `g_feedback_and_monitoring` ✅ drafted | `log_feedback` (HUMAN + CODE source) on traces (needs `flush_trace_async_logging`), read back via `get_trace`; monitoring = `search_traces` + `mlflow.genai.evaluate(data=traces, scorers=[judge])`. Verified live. Flags Review App / labeling / scheduled scorers as Databricks-managed. | — |
 
 **Advanced / discussion (added on request):**
 - **DSPy** — advanced companion to `e_prompt_registry`: `mlflow.dspy.autolog()` + `mlflow.genai.optimize_prompts`. Build after the prompt registry.
@@ -64,5 +64,7 @@ approved — `llama-index` + a Milvus client. **Ollama is a documented system pr
 a Python dependency.
 
 ## Build order
-`a_` → `b_` → `c_` → `d_` → `e_` → `f_` are built and contiguous. `g_feedback` is a stretch. DSPy and the
+`a_` → … → `g_` are built and contiguous — the GenAI spine is complete (drafts; need live runs).
+Remaining optional: DSPy, the LlamaIndex/Milvus RAG, and a possible future `databricks/` track for
+managed-only features (Review App, labeling, scheduled scorers) — see roadmap.md. DSPy and the
 LlamaIndex/Milvus RAG are advanced/under-discussion items above.

@@ -54,12 +54,12 @@ The `openai` client (which talks to both Ollama and OpenAI) is added to the proj
 model — notebooks append `/no_think` for clean, fast traces and turn thinking on where it's the
 point. Lighter alt: `gemma3:4b`.
 
-**Status:** `a_`–`f_` **drafted and contiguous**. `a_tracing_quickstart` ✅ verified (Ollama +
+**Status:** `a_`–`g_` **drafted and contiguous** — the GenAI spine. `a_tracing_quickstart` ✅ verified (Ollama +
 Azure). `b_` hand-built RAG; `c_` LLM-as-judge (Azure judge via MLflow's native `azure:/`
 provider — no `litellm`; judges read `AZURE_API_KEY`/`AZURE_API_BASE`/`AZURE_API_VERSION`,
 mapped from the repo's `AZURE_OPENAI_*`); `d_` LangChain tool-agent traced by one-line
 `mlflow.langchain.autolog()` (stack verified live on Ollama). `e_` is the prompt registry (register/version/alias + promote the winning version with the
-`c_` judge). `f_` serves a GenAI app over REST (models-from-code; full flow log→load→serve→curl verified live). `b_`–`f_` need full runs to capture outputs. `g_` (feedback) planned.
+`c_` judge). `f_` serves a GenAI app over REST (models-from-code; verified live); `g_` closes the loop — human/code feedback on traces (`log_feedback`) + LLM-judge monitoring over `search_traces` (verified live). `b_`–`g_` need full runs to capture outputs.
 
 | # | Notebook | Teaches | Parallels (ml) |
 |---|----------|---------|----------------|
@@ -69,7 +69,7 @@ mapped from the repo's `AZURE_OPENAI_*`); `d_` LangChain tool-agent traced by on
 | d | `d_langchain_agent` ✅ | A tool-using LangChain agent traced by one-line `mlflow.langchain.autolog()` — the framework alternative to `b_`'s manual spans, on a runtime-decided agent loop. | — |
 | e | `e_prompt_registry` ✅ | `register_prompt`, versions + aliases, load by alias, and promote the version that wins the `c_` LLM-as-judge comparison. | `f_model_registry` |
 | f | `f_genai_app_serving` ✅ | Log a GenAI app via models-from-code, `mlflow models serve` it on 5002, curl `/invocations`; the served app loads `qa-answer@production` per request, so prompt promotion ships with no redeploy. | `g_model_serving` |
-| g | `g_feedback_and_monitoring` (stretch) | Human feedback / assessments on traces; production-monitoring scorers. | — |
+| g | `g_feedback_and_monitoring` ✅ | Human + code feedback on traces (`log_feedback`); LLM-judge monitoring over `search_traces` (OSS). Flags the Databricks-managed boundary. | — |
 
 **Advanced / under discussion:**
 
@@ -97,7 +97,7 @@ cross-link the `ml/` analog rather than re-teaching shared MLflow concepts.
 basics/ (a_setup → b_tracking_quickstart)
    ├─► ml/      a_ … j_   ✅ complete
    └─► gen_ai/  a_ ✅ → b_ → c_ → d_ → e_ (prompts) → f_ (serving) → g_ (feedback)   🔧
-                a_–f_ built; g_ feedback is a stretch
+                a_–g_ built — the GenAI spine is complete (drafts)
 ```
 
 ## Beyond this roadmap (not yet planned)
@@ -105,3 +105,10 @@ basics/ (a_setup → b_tracking_quickstart)
 - **MLflow Projects / packaging** (`MLproject`, reproducible `mlflow run`).
 - **Remote/team setup** — backend store on a real DB, artifact store on S3/GCS.
 - **Deployment targets deep-dive** — SageMaker / Kubernetes / Modal.
+- **A `databricks/` track (managed-only features).** `g_` is where the repo first meets the OSS
+  ceiling: the **Review App** + **labeling sessions** (human-in-the-loop UI), **scheduled scorers**
+  (`ScorerScheduleConfig`, auto-monitoring on live traffic), Unity Catalog governance, and managed
+  serving endpoints all need a **Databricks workspace**. The repo so far is fully OSS (Databricks
+  features flagged as managed *alternatives*, never required). If we cover them, they'd form a
+  separate, clearly-prerequisited `databricks/` folder — its bar (a workspace) sits above this
+  repo's "students with no budget" audience, so it stays optional.
