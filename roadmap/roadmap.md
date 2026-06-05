@@ -41,7 +41,7 @@ capstone that threads them together. Spine dataset: California housing (`fetch_c
 ~20 k rows); synthetic `make_regression` only where scale is the lesson (`i_system_metrics`).
 Aliases, not deprecated stage transitions, throughout.
 
-## `gen_ai/` — GenAI / LLM track 🔧 in progress
+## `gen_ai/` — GenAI / LLM track ✅ feature-complete (drafts)
 
 **LLM backend (decided):** teach against a **local Ollama** model (zero cost, no API key —
 fits the "students with no budget" audience) and show the one-line swap to the **OpenAI API**.
@@ -54,7 +54,7 @@ The `openai` client (which talks to both Ollama and OpenAI) is added to the proj
 model — notebooks append `/no_think` for clean, fast traces and turn thinking on where it's the
 point. Lighter alt: `gemma3:4b`.
 
-**Status:** `a_`–`h_` **drafted and contiguous** — the GenAI spine plus `h_` (advanced: DSPy prompt optimization). `a_tracing_quickstart` ✅ verified (Ollama +
+**Status:** `a_`–`i_` **drafted and contiguous** — the full GenAI track, ending in `i_rag_capstone` (a realistic Milvus + LlamaIndex RAG that threads the whole track). All need live runs to capture outputs. `a_tracing_quickstart` ✅ verified (Ollama +
 Azure). `b_` hand-built RAG; `c_` LLM-as-judge (Azure judge via MLflow's native `azure:/`
 provider — no `litellm`; judges read `AZURE_API_KEY`/`AZURE_API_BASE`/`AZURE_API_VERSION`,
 mapped from the repo's `AZURE_OPENAI_*`); `d_` LangChain tool-agent traced by one-line
@@ -71,6 +71,7 @@ mapped from the repo's `AZURE_OPENAI_*`); `d_` LangChain tool-agent traced by on
 | f | `f_genai_app_serving` ✅ | Log a GenAI app via models-from-code, `mlflow models serve` it on 5002, curl `/invocations`; the served app loads `qa-answer@production` per request, so prompt promotion ships with no redeploy. | `g_model_serving` |
 | g | `g_feedback_and_monitoring` ✅ | Human + code feedback on traces (`log_feedback`); LLM-judge monitoring over `search_traces` (OSS). Flags the Databricks-managed boundary. | — |
 | h | `h_dspy_optimization` (advanced) ✅ | A DSPy optimizer (`BootstrapFewShot`) auto-improves a prompt against a metric; `mlflow.dspy.autolog()` records every compile + saves the optimized program. Azure LM. The prompt analog of `ml/b_hyperparameter_tuning`. | `b_hyperparameter_tuning` |
+| i | `i_rag_capstone` ✅ | Realistic RAG finale: Azure embeddings → **Milvus Lite** index → LlamaIndex query engine (traced) → retrieval + answer judge eval → prompt registry → feedback/monitor → serve (← `f_`). Threads the whole track. | `j_capstone_end_to_end` |
 
 **Advanced / under discussion:**
 
@@ -79,13 +80,10 @@ mapped from the repo's `AZURE_OPENAI_*`); `d_` LangChain tool-agent traced by on
   (`mlflow.dspy.autolog()` autologs the optimization); AdalFlow is elegant for an ML audience
   and Ollama-native, but its MLflow story isn't native, so it loses for an *MLflow* tutorial.
   AdalFlow is noted in `h_` as the alternative paradigm.
-- **LlamaIndex / Milvus RAG** *(for discussion — decide before building)*: a "production RAG"
-  notebook that swaps `b_`'s toy lexical retriever for a LlamaIndex `VectorStoreIndex` backed by
-  a **Milvus** vector store, traced by `mlflow.llama_index.autolog()`, with the retrieval
-  scorers (`RetrievalRelevance`/`RetrievalGroundedness`) from `c_`. **Pro:** real embeddings + a
-  real vector DB, end to end. **Con:** heavy deps (`llama-index`, a running Milvus, an embedding
-  model) and conceptual overlap with `b_`/`d_`. Open question: worth a full notebook, or a short
-  appendix to `b_`?
+- **LlamaIndex / Milvus RAG — built as `i_rag_capstone`** (the GenAI finale). Resolved the
+  "full notebook vs `b_` appendix" question by making it the realistic capstone: real Azure
+  embeddings + **Milvus Lite** + LlamaIndex, traced/evaluated/governed/served end to end, with
+  the `c_` retrieval scorers finally grading a real retriever.
 
 **Editorial stance** (per the `mlflow-tutorial-improve` skill): lead with the *problem* (you
 can't put a number on "is this answer good?" → LLM-as-judge; you can't see inside a chain →
@@ -98,7 +96,7 @@ cross-link the `ml/` analog rather than re-teaching shared MLflow concepts.
 basics/ (a_setup → b_tracking_quickstart)
    ├─► ml/      a_ … j_   ✅ complete
    └─► gen_ai/  a_ ✅ → b_ → c_ → d_ → e_ (prompts) → f_ (serving) → g_ (feedback)   🔧
-                a_–h_ built (g_ = spine end; h_ = advanced DSPy optimization)
+                a_–i_ built (g_ = spine end; h_ = DSPy; i_ = realistic RAG capstone)
 ```
 
 ## Beyond this roadmap (not yet planned)
