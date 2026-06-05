@@ -46,7 +46,7 @@ Build one at a time, executed live against a local Ollama model. Sequence:
 | c | `c_genai_evaluation` ✅ drafted | `mlflow.genai.evaluate()` with built-in judges (RelevanceToQuery, Guidelines, Correctness) + a custom `@scorer` + a `predict_fn` app. **Judge = `azure:/<deployment>`** via MLflow's native azure provider (map `AZURE_OPENAI_*` → `AZURE_API_KEY`/`AZURE_API_BASE`/`AZURE_API_VERSION`; no litellm). Smoke-tested live; needs a full run. | `e_model_evaluation` |
 | d | `d_langchain_agent` ✅ drafted | Tool-using LangChain agent (`langchain.agents.create_agent`, langchain v1) on Ollama, traced by one-line `mlflow.langchain.autolog()` — the framework alternative to `b_`'s manual spans. Stack verified live (multi-step tool chain → correct answer, traced). Needs a full run. | — |
 | e | `e_prompt_registry` ✅ drafted | `register_prompt` (auto-versions), `{{var}}` templates, `set_prompt_alias`, `load_prompt("prompts:/name@alias")`; compares v1 vs v2 by running each through Ollama and scoring with the `c_` Azure judge, then promotes the winner. API verified live. Needs a full run. | `f_model_registry` |
-| f | `f_genai_app_serving` (advanced) | Log a GenAI app/agent (models-from-code / `ResponsesAgent`), serve it, the deployment story. Logs the `d_` agent. | `g_model_serving` |
+| f | `f_genai_app_serving` ✅ drafted | models-from-code pyfunc (loads `qa-answer@production` per request) → `mlflow models serve -p 5002 --env-manager local` (needs `MLFLOW_TRACKING_URI` for the registry) → curl `/invocations`. Full flow verified live. Notes the `d_` agent serves the same way via `mlflow.langchain.log_model`. | `g_model_serving` |
 | g | `g_feedback_and_monitoring` (stretch) | Human feedback / assessments on traces; production-monitoring scorers on live traffic. | — |
 
 **Advanced / discussion (added on request):**
@@ -64,6 +64,5 @@ approved — `llama-index` + a Milvus client. **Ollama is a documented system pr
 a Python dependency.
 
 ## Build order
-`a_` → `b_` → `c_` → `d_` are built and contiguous. Next: `e_prompt_registry`, then
-`f_genai_app_serving` (logs/serves the `d_` agent). `g_feedback` is a stretch. DSPy and the
+`a_` → `b_` → `c_` → `d_` → `e_` → `f_` are built and contiguous. `g_feedback` is a stretch. DSPy and the
 LlamaIndex/Milvus RAG are advanced/under-discussion items above.
