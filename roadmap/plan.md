@@ -49,19 +49,18 @@ Build one at a time, executed live against a local Ollama model. Sequence:
 | f | `f_genai_app_serving` ✅ drafted | models-from-code pyfunc (loads `qa-answer@production` per request) → `mlflow models serve -p 5002 --env-manager local` (needs `MLFLOW_TRACKING_URI` for the registry) → curl `/invocations`. Full flow verified live. Notes the `d_` agent serves the same way via `mlflow.langchain.log_model`. | `g_model_serving` |
 | g | `g_feedback_and_monitoring` ✅ drafted | `log_feedback` (HUMAN + CODE source) on traces (needs `flush_trace_async_logging`), read back via `get_trace`; monitoring = `search_traces` + `mlflow.genai.evaluate(data=traces, scorers=[judge])`. Verified live. Flags Review App / labeling / scheduled scorers as Databricks-managed. | — |
 
-**Advanced / discussion (added on request):**
-- **DSPy** — advanced companion to `e_prompt_registry`: `mlflow.dspy.autolog()` + `mlflow.genai.optimize_prompts`. Build after the prompt registry.
+**Advanced / discussion:**
+- **DSPy** — **built as `h_dspy_optimization`** (`BootstrapFewShot` + `mlflow.dspy.autolog()`, Azure LM; flow verified live). Chose DSPy over AdalFlow for native MLflow integration; AdalFlow noted in `h_` as the alternative.
 - **LlamaIndex / Milvus RAG** — *for discussion*: real RAG (vector store + embeddings) vs `b_`'s toy retriever. Heavy deps; decide whether it's a full notebook or a `b_` appendix before building.
 
 **Editorial stance** (per the `mlflow-tutorial-improve` skill): lead with the *problem*,
 define GenAI jargon once (span, trace, scorer, judge, prompt version), cross-link the `ml/`
 analog instead of re-teaching shared MLflow concepts.
 
-**Dependencies:** **added** — `openai` (used against Ollama too), `python-dotenv`, and the
-LangChain v1 stack (`langchain`, `langchain-openai`, `langgraph`) for `d_`. Still to add as
-their notebooks land: `dspy` (DSPy advanced), and — if the LlamaIndex/Milvus RAG notebook is
-approved — `llama-index` + a Milvus client. **Ollama is a documented system prerequisite**, not
-a Python dependency.
+**Dependencies:** **added** — `openai`, `python-dotenv`, the LangChain v1 stack
+(`langchain`/`langchain-openai`/`langgraph`) for `d_`, and `dspy` (brings `litellm`) for `h_`.
+Still to add only if the LlamaIndex/Milvus RAG notebook is approved: `llama-index` + a Milvus
+client. **Ollama is a documented system prerequisite**, not a Python dependency.
 
 ## Build order
 `a_` → … → `g_` are built and contiguous — the GenAI spine is complete (drafts; need live runs).
