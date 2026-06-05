@@ -246,6 +246,44 @@ callout. Labeling them anything is performative.
 Do not rewrite upstream prose. Leave the original markdown cells
 recognizable and add new cells around them.
 
+### 10. Write for a public reader, not this machine
+
+These notebooks are public, on GitHub, run by strangers on unknown
+hardware, OSes, and setups. Prose must not assume the reader's
+environment is the author's, and must not read like a development log of
+what happened on one PC. This is the single most common way a
+locally-developed tutorial leaks its author's machine.
+
+- **Don't state this machine's specs as the reader's.** No "your 8 GB
+  GPU", "this laptop has 62 GB RAM", "your 22 cores". State what the
+  *task* needs and let readers map it to their box: "needs ~6 GB of
+  VRAM, or runs on CPU with more system RAM." Where a concrete number
+  helps, present it as one example tier among several, not the reader's
+  given.
+- **Offer choices, don't bake in the author's pick.** When a setting
+  depends on hardware (model size, batch size, worker count), give a
+  short "pick to match your machine" set — lighter / default / heavier —
+  rather than hard-coding the box you happened to develop on. Name a
+  concrete default so the notebook still runs end-to-end, but frame it as
+  *the default*, not *your only option*.
+- **Don't narrate build or run history.** "verified on this laptop",
+  "I ran this and got…", "already bumped to v2 here", "added to the
+  project earlier today" are developer notes, not teaching. Teach the
+  concept; describe what the reader will do, not what you did.
+- **Machine-dependent numbers are illustrative, not facts.** Latency,
+  tokens/sec, GPU utilisation, your VRAM, absolute paths under a home
+  directory — frame them as "in one example run on a [setup], you'll see
+  something like…", clearly an example. Reproducible values (a model's
+  download size, an API default, a registry digest) can be stated
+  plainly.
+
+This does **not** override the repo's "run it live" ethos (see
+`CLAUDE.md`): keep executing notebooks and showing real output. The point
+is to *frame* that output for a stranger — illustrative example, not
+universal truth. A notebook whose topic genuinely is hardware (e.g.
+`i_system_metrics`) may describe a real run's machine, but as "the setup
+this example used", never as "your setup".
+
 ## House patterns
 
 These patterns recur in `b_tracking_quickstart.ipynb` and should be
@@ -326,6 +364,13 @@ Stop and rewrite if the draft does any of these:
   comma-separated lists embedded in running prose, multiple distinct
   sub-topics jammed into the same bullet, no bold labels for skim. See
   principle 8 — the reader needs visible structure to navigate.
+- Couples the tutorial to the author's machine: states this PC's specs as
+  the reader's ("your 8 GB GPU"), narrates build/run history ("verified on
+  this laptop", "added to the project earlier"), bakes in the author's
+  hardware-dependent pick with no alternatives, or presents a one-off
+  machine-dependent number (latency, VRAM, a home-directory path) as a
+  universal fact. See principle 10 — write for a public reader on unknown
+  hardware.
 
 ## Out of scope
 
