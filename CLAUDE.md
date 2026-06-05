@@ -20,6 +20,7 @@ When adding to, expanding, restructuring, or cleaning up a tutorial, follow thes
 - **Surface MLflow version drift.** MLflow 3 changed several defaults (e.g. `sqlite:///mlflow.db` backend, registry enabled by default). Call these out when a reader following an older blog post or tutorial would be confused.
 - **Annotate additions clearly.** Use markdown headings like `## MISSING FROM THE OFFICIAL TUTORIAL` so a reader can tell upstream content from this repo's value-add.
 - **Keep upstream content recognizable.** Do not rewrite official tutorials — wrap them with prerequisites, context, and follow-ups.
+- **Write for a public reader, not this machine.** These are public tutorials on GitHub, run by strangers on unknown hardware and setups. Don't state this PC's specs as the reader's ("your 8 GB GPU"), don't narrate build/run history ("verified on this laptop", "added earlier today"), and treat machine-dependent numbers (latency, VRAM, GPU model, home-directory paths) as illustrative examples — "in one run you'll see something like…" — never as universal facts. State what the task needs and offer choices for different setups. Running notebooks live is still the goal; the point is to *frame* the results for a stranger. The `mlflow-tutorial-improve` skill (principle 10) details this.
 
 ## Environment
 
