@@ -20,3 +20,7 @@ _dataset_demo/
 # Demo data written by k_capstone_end_to_end.ipynb
 _capstone_demo/
 
+
+# Local secrets
+.env
+.env.*
