@@ -11,7 +11,7 @@ order:
 
 - **`src/basics/`** — track-agnostic foundations both tracks build on.
 - **`src/ml/`** — the traditional-ML track (complete).
-- **`src/gen_ai/`** — the GenAI / LLM track (planned — see `plan.md`).
+- **`src/gen_ai/`** — the GenAI / LLM track (in progress — see `plan.md`).
 
 ## `basics/` — shared foundations (port 5000)
 
@@ -97,7 +97,7 @@ cross-link the `ml/` analog rather than re-teaching shared MLflow concepts.
 basics/ (a_setup → b_tracking_quickstart)
    ├─► ml/      a_ … j_   ✅ complete
    └─► gen_ai/  a_ ✅ → b_ → c_ → d_ → e_ (prompts) → f_ (serving) → g_ (feedback)   🔧
-                b_ (multistep) and f_ (feedback) are enrichment, not blockers
+                a_–e_ built; f_ serving next; g_ feedback is a stretch
 ```
 
 ## Beyond this roadmap (not yet planned)
