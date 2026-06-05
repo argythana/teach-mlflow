@@ -16,3 +16,8 @@ dependencies = [
     "skops>=0.14.0",
     "xgboost>=3.2.0",
 ]
+
+[dependency-groups]
+dev = [
+    "huggingface-hub[cli]>=1.17.0",
+]

@@ -46,7 +46,13 @@ Aliases, not deprecated stage transitions, throughout.
 **LLM backend (decided):** teach against a **local Ollama** model (zero cost, no API key —
 fits the "students with no budget" audience) and show the one-line swap to the **OpenAI API**.
 Ollama is a documented *system prerequisite*, like the tracking server — not a pip dependency.
-The `openai` client (which talks to both Ollama and OpenAI) is added to the project.
+The `openai` client (which talks to both Ollama and OpenAI) is added to the project, and
+`huggingface_hub[cli]` is a dev dep for browsing GGUF models on HF (Ollama can run any GGUF via
+`ollama run hf.co/<repo>:<quant>`).
+
+**Default model:** `qwen3:8b` (5.2 GB, fits an 8 GB GPU; host has ~64 GB RAM). It's a reasoning
+model — notebooks append `/no_think` for clean, fast traces and turn thinking on where it's the
+point. Lighter alt: `gemma3:4b`.
 
 **Status:** `a_tracing_quickstart` is **drafted** — needs a live run against Ollama + a server
 on port 5001. The rest of the sequence is planned.
