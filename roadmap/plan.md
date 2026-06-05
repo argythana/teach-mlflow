@@ -51,7 +51,7 @@ Build one at a time, executed live against a local Ollama model. Sequence:
 
 **Advanced / discussion:**
 - **DSPy** — **built as `h_dspy_optimization`** (`BootstrapFewShot` + `mlflow.dspy.autolog()`, Azure LM; flow verified live). Chose DSPy over AdalFlow for native MLflow integration; AdalFlow noted in `h_` as the alternative.
-- **LlamaIndex / Milvus RAG** — *for discussion*: real RAG (vector store + embeddings) vs `b_`'s toy retriever. Heavy deps; decide whether it's a full notebook or a `b_` appendix before building.
+- **LlamaIndex / Milvus RAG — built as `i_rag_capstone`** (the GenAI finale): Azure embeddings + Milvus Lite + LlamaIndex, traced/evaluated/governed/served. Full stack verified live (incl. a milvus-lite 3.0 `output_fields` search workaround baked into the notebook).
 
 **Editorial stance** (per the `mlflow-tutorial-improve` skill): lead with the *problem*,
 define GenAI jargon once (span, trace, scorer, judge, prompt version), cross-link the `ml/`
@@ -63,7 +63,7 @@ Still to add only if the LlamaIndex/Milvus RAG notebook is approved: `llama-inde
 client. **Ollama is a documented system prerequisite**, not a Python dependency.
 
 ## Build order
-`a_` → … → `g_` are built and contiguous — the GenAI spine is complete (drafts; need live runs).
-Remaining optional: DSPy, the LlamaIndex/Milvus RAG, and a possible future `databricks/` track for
-managed-only features (Review App, labeling, scheduled scorers) — see roadmap.md. DSPy and the
+`a_` → … → `i_` are built and contiguous — the **GenAI track is feature-complete** (drafts; need
+live runs). `i_rag_capstone` is the realistic finale. Remaining: a possible future `databricks/`
+track for managed-only features (Review App, labeling, scheduled scorers) — see roadmap.md. DSPy and the
 LlamaIndex/Milvus RAG are advanced/under-discussion items above.
