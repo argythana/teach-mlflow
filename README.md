@@ -23,7 +23,7 @@ Notebooks are grouped by track. Each folder is prefixed `a_`, `b_`, `c_`, … so
 - `b_hyperparameter_tuning` — an Optuna sweep with parent/child runs, and a first look at the model registry.
 - `c_logging_plots` — log EDA and diagnostic figures across a sweep with `mlflow.log_figure`.
 - `d_logging_callbacks` — XGBoost + Optuna callbacks; parent-run metric history vs stdout heartbeats.
-- `e_model_evaluation` — `mlflow.evaluate()`, custom metrics, and validation gates (CI for models).
+- `e_model_evaluation` — `mlflow.models.evaluate()`, custom metrics, and validation gates (CI for models).
 - `f_model_registry` — versions, `@champion` / `@challenger` aliases, the promotion lifecycle, and rollback.
 - `g_model_serving` — serve a registered model over REST with `mlflow models serve`; the `/invocations` contract, signature enforcement, and the container path.
 - `h_dataset_logging` — `mlflow.data` + `log_input` for dataset lineage (raw vs engineered features, digests).
@@ -50,13 +50,14 @@ See `roadmap/` for the design decisions behind each track and what is planned ne
 
 ## Start the MLflow tracking server first
 
-Every notebook assumes a local MLflow tracking server is already running. **Before opening a notebook**, start it in a separate terminal from the repo root, on the port that notebook expects — the `basics/` notebooks use `5000`; the `ml/` and `gen_ai/` tracks use `5001`:
+Every notebook assumes a local MLflow tracking server is already running. **Before opening a notebook**, start it in a separate terminal from the `src/` folder, on the port that notebook expects — the `basics/` notebooks use `5000`; the `ml/` and `gen_ai/` tracks use `5001`:
 
 ```bash
+cd src/
 mlflow ui --host 127.0.0.1 --port 5000   # use 5001 for the ml/ and gen_ai/ tracks
 ```
 
-Leave it running and open the UI at the matching address (e.g. <http://127.0.0.1:5000>). In MLflow 3 this creates a `mlflow.db` (the SQLite backend store) and an `mlartifacts/` directory next to wherever you started the server — running it from the repo root keeps them tidy. Both are per-developer runtime state and are gitignored.
+Leave it running and open the UI at the matching address (e.g. <http://127.0.0.1:5000>). In MLflow 3 this creates a `mlflow.db` (the SQLite backend store) and an `mlartifacts/` directory in the folder you started the server from. Start it from `src/` every time so they stay in one place, next to the notebooks; the notebooks' on-disk examples assume that layout. Both are per-developer runtime state and are gitignored.
 
 If a notebook cell calls `mlflow.set_tracking_uri("http://127.0.0.1:<port>")` while no server is listening on that port, the logging calls will fail.
 
