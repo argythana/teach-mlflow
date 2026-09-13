@@ -48,6 +48,8 @@ Status: **feature-complete (drafts)**. All nine notebooks are written, in readin
 - `h_dspy_optimization` — (advanced) a DSPy optimizer improves a prompt against a metric while `mlflow.dspy.autolog()` records each compile.
 - `i_rag_capstone` — the finale: Azure embeddings, a Milvus Lite index, and a LlamaIndex query engine, traced, evaluated, prompt-versioned, and monitored; its serving step points back to `f_`.
 
+![MLflow Traces view of the d_langchain_agent run: the user's question, the agent's ChatOpenAI, add and multiply steps, the tool results 7 and 35, and its final answer](docs/images/mlflow-ui-agent-trace.png)
+
 See `roadmap/` for the design decisions behind each track and what is planned next.
 
 ## Start the MLflow tracking server first
