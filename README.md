@@ -111,3 +111,7 @@ AZURE_OPENAI_EMBED_MODEL=<your-embedding-deployment-name>
 
 - [MLflow documentation](https://mlflow.org/docs/latest/index.html)
 - [MLflow GitHub](https://github.com/mlflow/mlflow)
+
+## License
+
+The code in this repository, including the notebooks' code cells, is licensed under the [MIT License](LICENSE). The tutorial prose, in the Markdown files and the notebooks' text cells, is licensed under [Creative Commons Attribution 4.0 International (CC BY 4.0)](LICENSE-CC-BY-4.0.txt). If you reuse the prose, credit it with this line and say whether you changed it: "[teach-mlflow](https://github.com/argythana/teach-mlflow) by Thanasis Argyriou, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)."
