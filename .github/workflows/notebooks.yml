@@ -1,0 +1,172 @@
+# Executes every notebook in src/basics/ and src/ml/ top to bottom, so each
+# push to main proves the offline half of the course still runs. Any cell error
+# fails the job. The workflow uses no credentials of any kind.
+#
+# Ports, as the notebooks hard-code them:
+#   5000  tracking server for src/basics/
+#   5001  tracking server for src/ml/
+#   5002  model server. src/ml/g_model_serving.ipynb expects `mlflow models
+#         serve` to be running already (a reader starts it in a second
+#         terminal), so this workflow starts it just before that notebook and
+#         stops it right after. src/ml/j_capstone_end_to_end.ipynb starts and
+#         stops its own model server on 5002, so the port must be free by then.
+#
+# Each notebook runs with its own directory as the working directory, as a
+# reader runs it. The servers run from $RUNNER_TEMP, so their mlflow.db and
+# mlartifacts/ stay out of the checkout. Executed copies are written to
+# $RUNNER_TEMP too; the tracked notebooks are never overwritten.
+#
+# GitHub-hosted runners have no GPU: the device="cuda" run in
+# src/ml/i_system_metrics.ipynb falls back to CPU with an XGBoost warning.
+#
+# Excluded: every notebook in src/gen_ai/. Each one calls a large language
+# model through Ollama (a local model server the runner does not have) or
+# Azure OpenAI (a paid service that needs an API key), so none can run here:
+#   src/gen_ai/a_tracing_quickstart.ipynb
+#   src/gen_ai/b_tracing_a_multistep_app.ipynb
+#   src/gen_ai/c_genai_evaluation.ipynb
+#   src/gen_ai/d_langchain_agent.ipynb
+#   src/gen_ai/e_prompt_registry.ipynb
+#   src/gen_ai/f_genai_app_serving.ipynb
+#   src/gen_ai/g_feedback_and_monitoring.ipynb
+#   src/gen_ai/h_dspy_optimization.ipynb
+#   src/gen_ai/i_rag_capstone.ipynb
+
+name: Notebooks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  execute:
+    name: Execute basics and ml notebooks
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      # Seconds a single cell may run; the XGBoost cells in ml/i_ are the slowest.
+      CELL_TIMEOUT: "900"
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Python 3.14
+        uses: actions/setup-python@v7.0.0
+        with:
+          python-version: "3.14"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.1.0
+        with:
+          enable-cache: true
+
+      - name: Install dependencies from uv.lock
+        run: |
+          uv sync --locked
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
+
+      # fetch_california_housing downloads its data on first use; caching it
+      # avoids a network fetch (and its occasional failures) on every run.
+      - name: Cache scikit-learn datasets
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/scikit_learn_data
+          key: scikit-learn-data-v1
+
+      - name: Start MLflow tracking servers on 5000 (basics) and 5001 (ml)
+        id: servers
+        run: |
+          for port in 5000 5001; do
+            dir="$RUNNER_TEMP/mlflow-$port"
+            mkdir -p "$dir"
+            (cd "$dir" && nohup mlflow server --host 127.0.0.1 --port "$port" > server.log 2>&1 &)
+          done
+          for port in 5000 5001; do
+            for _ in $(seq 120); do
+              if curl -fsS "http://127.0.0.1:$port/health" > /dev/null 2>&1; then break; fi
+              sleep 1
+            done
+            if ! curl -fsS "http://127.0.0.1:$port/health" > /dev/null; then
+              cat "$RUNNER_TEMP/mlflow-$port/server.log"
+              exit 1
+            fi
+            echo "MLflow tracking server is up on port $port"
+          done
+
+      - name: Execute src/basics notebooks
+        working-directory: src/basics
+        run: |
+          for nb in *.ipynb; do
+            echo "==> src/basics/$nb"
+            jupyter nbconvert --to notebook --execute \
+              --ExecutePreprocessor.timeout="$CELL_TIMEOUT" \
+              --output-dir "$RUNNER_TEMP/executed/basics" "$nb"
+          done
+
+      - name: Execute src/ml notebooks
+        if: ${{ !cancelled() && steps.servers.outcome == 'success' }}
+        working-directory: src/ml
+        run: |
+          serve_log="$RUNNER_TEMP/model-serve.log"
+
+          start_model_server() {
+            # Serves the alias f_model_registry.ipynb sets. setsid gives the
+            # server its own process group, so stopping it also stops uvicorn.
+            MLFLOW_TRACKING_URI=http://127.0.0.1:5001 setsid mlflow models serve \
+              -m "models:/ca_housing_price@champion" \
+              --host 127.0.0.1 --port 5002 --env-manager local > "$serve_log" 2>&1 &
+            serve_pgid=$!
+            for _ in $(seq 120); do
+              if curl -fsS http://127.0.0.1:5002/health > /dev/null 2>&1; then
+                echo "Model server is up on port 5002"
+                return 0
+              fi
+              sleep 1
+            done
+            cat "$serve_log"
+            return 1
+          }
+
+          stop_model_server() {
+            kill -TERM -- "-$serve_pgid" 2> /dev/null || true
+            for _ in $(seq 30); do
+              if ! ss -Hltn "sport = :5002" | grep -q .; then
+                echo "Model server stopped; port 5002 is free"
+                return 0
+              fi
+              sleep 1
+            done
+            echo "Port 5002 is still in use after stopping the model server"
+            return 1
+          }
+
+          for nb in *.ipynb; do
+            if [ "$nb" = g_model_serving.ipynb ]; then start_model_server; fi
+            echo "==> src/ml/$nb"
+            jupyter nbconvert --to notebook --execute \
+              --ExecutePreprocessor.timeout="$CELL_TIMEOUT" \
+              --output-dir "$RUNNER_TEMP/executed/ml" "$nb"
+            if [ "$nb" = g_model_serving.ipynb ]; then stop_model_server; fi
+          done
+
+      - name: Show server logs
+        if: failure()
+        run: |
+          for log in "$RUNNER_TEMP"/mlflow-500*/server.log "$RUNNER_TEMP/model-serve.log"; do
+            if [ -f "$log" ]; then
+              echo "===== $log"
+              tail -n 200 "$log"
+            fi
+          done
