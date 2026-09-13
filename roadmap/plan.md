@@ -35,9 +35,9 @@ now live in `src/basics/`.
 - Ran `ml/a_model_logging` (port 5001) and re-ran `basics/b_` so outputs reflect the split.
   The `ml/` track is now complete end to end.
 
-## To build — GenAI notebooks (`src/gen_ai/`)
+## GenAI notebooks (`src/gen_ai/`) — built
 
-Build one at a time, executed live against a local Ollama model. Sequence:
+Built one at a time against a local Ollama model, in this sequence:
 
 | # | Notebook | Teaches | Parallels (ml) |
 |---|----------|---------|----------------|
@@ -49,7 +49,7 @@ Build one at a time, executed live against a local Ollama model. Sequence:
 | f | `f_genai_app_serving` ✅ drafted | models-from-code pyfunc (loads `qa-answer@production` per request) → `mlflow models serve -p 5002 --env-manager local` (needs `MLFLOW_TRACKING_URI` for the registry) → curl `/invocations`. Full flow verified live. Notes the `d_` agent serves the same way via `mlflow.langchain.log_model`. | `g_model_serving` |
 | g | `g_feedback_and_monitoring` ✅ drafted | `log_feedback` (HUMAN + CODE source) on traces (needs `flush_trace_async_logging`), read back via `get_trace`; monitoring = `search_traces` + `mlflow.genai.evaluate(data=traces, scorers=[judge])`. Verified live. Flags Review App / labeling / scheduled scorers as Databricks-managed. | — |
 
-**Advanced / discussion:**
+**Advanced notebooks (built):**
 - **DSPy** — **built as `h_dspy_optimization`** (`BootstrapFewShot` + `mlflow.dspy.autolog()`, Azure LM; flow verified live). Chose DSPy over AdalFlow for native MLflow integration; AdalFlow noted in `h_` as the alternative.
 - **LlamaIndex / Milvus RAG — built as `i_rag_capstone`** (the GenAI finale): Azure embeddings + Milvus Lite + LlamaIndex, traced/evaluated/governed/served. Full stack verified live (incl. a milvus-lite 3.0 `output_fields` search workaround baked into the notebook).
 
@@ -58,12 +58,13 @@ define GenAI jargon once (span, trace, scorer, judge, prompt version), cross-lin
 analog instead of re-teaching shared MLflow concepts.
 
 **Dependencies:** **added** — `openai`, `python-dotenv`, the LangChain v1 stack
-(`langchain`/`langchain-openai`/`langgraph`) for `d_`, and `dspy` (brings `litellm`) for `h_`.
-Still to add only if the LlamaIndex/Milvus RAG notebook is approved: `llama-index` + a Milvus
-client. **Ollama is a documented system prerequisite**, not a Python dependency.
+(`langchain`/`langchain-openai`/`langgraph`) for `d_`, `dspy` (brings `litellm`) for `h_`, and
+for `i_` the LlamaIndex packages (`llama-index-core`, `llama-index-vector-stores-milvus`,
+`llama-index-embeddings-azure-openai`, `llama-index-llms-azure-openai`) plus `pymilvus`, which
+bundles Milvus Lite. **Ollama is a documented system prerequisite**, not a Python dependency.
 
 ## Build order
-`a_` → … → `i_` are built and contiguous — the **GenAI track is feature-complete** (drafts; need
-live runs). `i_rag_capstone` is the realistic finale. Remaining: a possible future `databricks/`
-track for managed-only features (Review App, labeling, scheduled scorers) — see roadmap.md. DSPy and the
-LlamaIndex/Milvus RAG are advanced/under-discussion items above.
+`a_` → … → `i_` are built and contiguous — the GenAI track is **feature-complete (drafts)**: every
+notebook is written, but they need live runs to capture outputs. `i_rag_capstone` is the realistic
+finale. Remaining: a possible future `databricks/` track for managed-only features (Review App,
+labeling, scheduled scorers) — see roadmap.md.

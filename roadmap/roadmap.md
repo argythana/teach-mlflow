@@ -11,7 +11,7 @@ order:
 
 - **`src/basics/`** — track-agnostic foundations both tracks build on.
 - **`src/ml/`** — the traditional-ML track (complete).
-- **`src/gen_ai/`** — the GenAI / LLM track (in progress — see `plan.md`).
+- **`src/gen_ai/`** — the GenAI / LLM track: feature-complete (drafts); see `plan.md`.
 
 ## `basics/` — shared foundations (port 5000)
 
@@ -50,9 +50,9 @@ The `openai` client (which talks to both Ollama and OpenAI) is added to the proj
 `huggingface_hub[cli]` is a dev dep for browsing GGUF models on HF (Ollama can run any GGUF via
 `ollama run hf.co/<repo>:<quant>`).
 
-**Default model:** `qwen3:8b` (5.2 GB, fits an 8 GB GPU; host has ~64 GB RAM). It's a reasoning
-model — notebooks append `/no_think` for clean, fast traces and turn thinking on where it's the
-point. Lighter alt: `gemma3:4b`.
+**Default model:** `qwen3:8b` (about a 5 GB download; Ollama runs it on a GPU when it fits and
+falls back to the CPU otherwise). It's a reasoning model — notebooks append `/no_think` for clean,
+fast traces and turn thinking on where it's the point. Lighter alt: `gemma3:4b`.
 
 **Status:** `a_`–`i_` **drafted and contiguous** — the full GenAI track, ending in `i_rag_capstone` (a realistic Milvus + LlamaIndex RAG that threads the whole track). All need live runs to capture outputs. `a_tracing_quickstart` ✅ verified (Ollama +
 Azure). `b_` hand-built RAG; `c_` LLM-as-judge (Azure judge via MLflow's native `azure:/`
@@ -73,7 +73,7 @@ mapped from the repo's `AZURE_OPENAI_*`); `d_` LangChain tool-agent traced by on
 | h | `h_dspy_optimization` (advanced) ✅ | A DSPy optimizer (`BootstrapFewShot`) auto-improves a prompt against a metric; `mlflow.dspy.autolog()` records every compile + saves the optimized program. Azure LM. The prompt analog of `ml/b_hyperparameter_tuning`. | `b_hyperparameter_tuning` |
 | i | `i_rag_capstone` ✅ | Realistic RAG finale: Azure embeddings → **Milvus Lite** index → LlamaIndex query engine (traced) → retrieval + answer judge eval → prompt registry → feedback/monitor → serve (← `f_`). Threads the whole track. | `j_capstone_end_to_end` |
 
-**Advanced / under discussion:**
+**Advanced notebooks (built):**
 
 - **DSPy prompt optimization — built as `h_dspy_optimization`.** Chose **DSPy over AdalFlow**
   (a PyTorch-like textual-gradient optimizer): DSPy has first-class MLflow integration
@@ -95,8 +95,8 @@ cross-link the `ml/` analog rather than re-teaching shared MLflow concepts.
 ```text
 basics/ (a_setup → b_tracking_quickstart)
    ├─► ml/      a_ … j_   ✅ complete
-   └─► gen_ai/  a_ ✅ → b_ → c_ → d_ → e_ (prompts) → f_ (serving) → g_ (feedback)   🔧
-                a_–i_ built (g_ = spine end; h_ = DSPy; i_ = realistic RAG capstone)
+   └─► gen_ai/  a_ → b_ → c_ → d_ → e_ (prompts) → f_ (serving) → g_ (feedback)   ✅ feature-complete (drafts)
+                then h_ (DSPy) and i_ (realistic RAG capstone); g_ = spine end
 ```
 
 ## Beyond this roadmap (not yet planned)
