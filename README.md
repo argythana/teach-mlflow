@@ -1,5 +1,7 @@
 # Teach MLflow — from beginner to advanced
 
+[![Notebooks](https://github.com/argythana/teach-mlflow/actions/workflows/notebooks.yml/badge.svg?branch=main)](https://github.com/argythana/teach-mlflow/actions/workflows/notebooks.yml?query=branch%3Amain)
+
 Tutorials and teaching material for MLflow, aimed at researchers and data scientists who know Python and ML but are new to tracking servers, model serving, and MLOps.
 
 MLflow has evolved rapidly and gained wide adoption. Since version 3 it has grown into a platform for tracking both traditional ML experiments and modern AI / LLM workflows.
