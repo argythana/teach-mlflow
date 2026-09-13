@@ -32,15 +32,25 @@ Notebooks are grouped by track. Each folder is prefixed `a_`, `b_`, `c_`, … so
 
 That completes the traditional-ML MLOps spine (tracking → evaluation → registry → serving).
 
-**`gen_ai/` — GenAI / LLM track** (in progress; local server on port `5001` plus a local [Ollama](https://ollama.com) model): tracing, LLM-as-judge evaluation, and the prompt registry — where the MLflow **Traces** tab lights up.
+**`gen_ai/` — GenAI / LLM track** (local server on port `5001`): tracing, LLM-as-judge evaluation, the prompt registry, serving, and feedback and monitoring — where the MLflow **Traces** tab lights up.
+
+Status: **feature-complete (drafts)**. All nine notebooks are written, in reading order, but not all have been run end to end, so some stored outputs may be missing or out of date. Besides the tracking server, the track needs a local Ollama model and, for five notebooks, a hosted Azure OpenAI deployment — see [GenAI track prerequisites](#genai-track-prerequisites).
 
 - `a_tracing_quickstart` — automatic and manual tracing (`mlflow.openai.autolog()`, `@mlflow.trace`) against a local Ollama model; spans, traces, and the Traces tab.
+- `b_tracing_a_multistep_app` — a hand-built RAG pipeline with nested retriever / chain / LLM spans, and how the trace shows which step produced a bad answer.
+- `c_genai_evaluation` — `mlflow.genai.evaluate()` with built-in and custom LLM-as-judge scorers, using an Azure OpenAI judge.
+- `d_langchain_agent` — a tool-using LangChain agent traced by the one-line `mlflow.langchain.autolog()`.
+- `e_prompt_registry` — register, version, and alias prompts, then promote the version the `c_` judge prefers.
+- `f_genai_app_serving` — log a GenAI app with models-from-code and serve it over REST on port `5002`; prompt promotions reach the endpoint with no redeploy.
+- `g_feedback_and_monitoring` — human and code feedback on traces (`log_feedback`), and LLM-judge monitoring over `search_traces`.
+- `h_dspy_optimization` — (advanced) a DSPy optimizer improves a prompt against a metric while `mlflow.dspy.autolog()` records each compile.
+- `i_rag_capstone` — the finale: Azure embeddings, a Milvus Lite index, and a LlamaIndex query engine, traced, evaluated, prompt-versioned, and monitored; its serving step points back to `f_`.
 
-See `roadmap/` for the rest of the planned sequence.
+See `roadmap/` for the design decisions behind each track and what is planned next.
 
 ## Start the MLflow tracking server first
 
-Every notebook assumes a local MLflow tracking server is already running. **Before opening a notebook**, start it in a separate terminal from the repo root, on the port that notebook expects — the `basics/` notebooks use `5000`, the `ml/` and `gen_ai/` tracks use `5001`, and the first cell of each notebook states which:
+Every notebook assumes a local MLflow tracking server is already running. **Before opening a notebook**, start it in a separate terminal from the repo root, on the port that notebook expects — the `basics/` notebooks use `5000`; the `ml/` and `gen_ai/` tracks use `5001`:
 
 ```bash
 mlflow ui --host 127.0.0.1 --port 5000   # use 5001 for the ml/ and gen_ai/ tracks
@@ -59,6 +69,43 @@ uv sync          # creates .venv/ and installs locked dependencies
 ```
 
 `direnv` auto-activates the venv via `.envrc`; otherwise `source .venv/bin/activate`.
+
+## GenAI track prerequisites
+
+The `gen_ai/` notebooks call a language model, so they need more than the tracking server.
+
+**A local Ollama model (free, no API key).** Install [Ollama](https://ollama.com) and pull the default model with `ollama pull qwen3:8b` (about a 5 GB download). It runs on a GPU when the model fits and falls back to the CPU otherwise, just more slowly.
+
+`a_`, `b_`, `d_`, and `f_` call only Ollama (`f_` also expects the prompt that `e_` registers). `c_`, `e_`, and `g_` use Ollama to produce the answers and traces they grade.
+
+**A hosted Azure OpenAI deployment (paid per call).** These notebooks call Azure OpenAI and stop with a `KeyError` if its credentials are missing:
+
+- `c_genai_evaluation` — the LLM-as-judge.
+- `e_prompt_registry` — the judge that picks the winning prompt version.
+- `g_feedback_and_monitoring` — the monitoring judge.
+- `h_dspy_optimization` — the model DSPy optimizes against.
+- `i_rag_capstone` — the embeddings, the answering model, and the judge.
+
+`a_tracing_quickstart` also has an optional Azure section, and `d_langchain_agent` shows a commented-out Azure swap.
+
+Put the credentials in a `.env` file at the repo root. `.env` is gitignored, so your keys stay out of commits, and the notebooks load it with `python-dotenv`. Replace each angle-bracket placeholder with a value from your own Azure resource:
+
+```bash
+# .env at the repo root (gitignored; never commit real values)
+AZURE_OPENAI_API_KEY=<your-api-key>
+AZURE_OPENAI_BASE_URL=https://<your-resource>.openai.azure.com
+AZURE_OPENAI_API_VERSION=2024-10-21
+AZURE_OPENAI_LIGHT_MODEL=<your-chat-deployment-name>
+AZURE_OPENAI_EMBED_MODEL=<your-embedding-deployment-name>
+```
+
+| Variable | Read by | What to put there |
+|---|---|---|
+| `AZURE_OPENAI_API_KEY` | the five notebooks above | Your resource's API key. Required. |
+| `AZURE_OPENAI_BASE_URL` | the five notebooks above | Your resource's endpoint. Required. A trailing `/openai` also works. |
+| `AZURE_OPENAI_API_VERSION` | the five notebooks above | The API version. Optional: defaults to `2024-10-21`. |
+| `AZURE_OPENAI_LIGHT_MODEL` | the five notebooks above | The name of *your* chat-model deployment; a fast, cheap tier (nano / mini) is enough. Defaults to `gpt-5.4-nano`, which works only if your deployment has that name. |
+| `AZURE_OPENAI_EMBED_MODEL` | `i_rag_capstone` | The name of *your* `text-embedding-3-small` deployment. |
 
 ## References
 
