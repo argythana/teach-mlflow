@@ -45,6 +45,8 @@ In MLflow 3+ this creates `mlflow.db` (SQLite backend store) and an `mlartifacts
 
 The server's directory is separate from each notebook's working directory. Run a notebook with its own folder (`src/basics/`, `src/ml/`, `src/gen_ai/`) as the cwd, which is Jupyter's default: executing a notebook with the repo root as its cwd makes MLflow write the absolute path of `pyproject.toml` into the stored outputs.
 
+The `gen_ai/` notebooks also need a local **Ollama** model, `qwen3:1.7b` (Q4_K_M, about a 1.4 GB download), set up in `src/setup/a_ollama_setup.ipynb`. Five of them (`c_genai_evaluation`, `e_prompt_registry`, `g_feedback_and_monitoring`, `h_dspy_optimization`, `i_rag_capstone`) also need an Azure OpenAI deployment; see README.md. Each of the five opens with a note saying so. Keep their stored outputs as they are unless you can re-run them against Azure.
+
 ## Repository layout
 
 - `src/` — adapted MLflow tutorial notebooks, grouped by track and ordered with `a_`, `b_`, `c_` prefixes so the intended reading sequence is obvious from `ls`. Each notebook stays close to the upstream original but adds prerequisites, terminology, and "why this feature exists" context per the [Teaching philosophy](#teaching-philosophy) above.

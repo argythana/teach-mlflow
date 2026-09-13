@@ -75,7 +75,7 @@ uv sync          # creates .venv/ and installs locked dependencies
 
 The `gen_ai/` notebooks call a language model, so they need more than the tracking server.
 
-**A local Ollama model (free, no API key).** Install [Ollama](https://ollama.com) and pull the default model with `ollama pull qwen3:8b` (about a 5 GB download). It runs on a GPU when the model fits and falls back to the CPU otherwise, just more slowly.
+**A local Ollama model (free, no API key).** Install [Ollama](https://ollama.com) and pull the default model with `ollama pull qwen3:1.7b` (about a 1.4 GB download). It runs on a GPU when the model fits and falls back to the CPU otherwise, just more slowly. The default is small yet still calls tools reliably, which `d_langchain_agent` needs. [`src/setup/a_ollama_setup.ipynb`](src/setup/a_ollama_setup.ipynb) walks through the setup.
 
 `a_`, `b_`, `d_`, and `f_` call only Ollama (`f_` also expects the prompt that `e_` registers). `c_`, `e_`, and `g_` use Ollama to produce the answers and traces they grade.
 
@@ -86,6 +86,8 @@ The `gen_ai/` notebooks call a language model, so they need more than the tracki
 - `g_feedback_and_monitoring` — the monitoring judge.
 - `h_dspy_optimization` — the model DSPy optimizes against.
 - `i_rag_capstone` — the embeddings, the answering model, and the judge.
+
+Each of the five opens with a short note on what it needs and on its stored outputs, so you can still read them without an Azure deployment.
 
 `a_tracing_quickstart` also has an optional Azure section, and `d_langchain_agent` shows a commented-out Azure swap.
 
