@@ -13,7 +13,8 @@ now live in `src/basics/`.
 
 **Decisions taken:**
 1. **LLM backend: Ollama-default, OpenAI noted.** GenAI notebooks teach against a local
-   Ollama model (zero cost, no API key — fits the "students with no budget" audience), and
+   Ollama model (zero cost, no API key — fits the "students with no budget" audience; the
+   exceptions are `c_`, `e_`, `g_`, `h_` and `i_`, which need hosted Azure OpenAI credentials), and
    show the one-line swap to the OpenAI API. Ollama is a documented *system prerequisite*,
    like the tracking server — not a pip dependency.
 2. **`basics/` holds `a_setup` + the whole `b_tracking_quickstart`.** `b_`'s second half
