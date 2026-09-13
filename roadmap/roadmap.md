@@ -45,21 +45,32 @@ Aliases, not deprecated stage transitions, throughout.
 
 **LLM backend (decided):** teach against a **local Ollama** model (zero cost, no API key —
 fits the "students with no budget" audience) and show the one-line swap to the **OpenAI API**.
+**Exception — five notebooks require hosted credentials:** `c_genai_evaluation`,
+`e_prompt_registry`, `g_feedback_and_monitoring`, `h_dspy_optimization` and `i_rag_capstone`
+call an **Azure OpenAI** deployment (the judges, DSPy's LM, the capstone's embeddings and LLM)
+and do not run without its credentials. The zero-cost, no-API-key path covers `a_`, `b_`, `d_`
+and `f_`, which call only Ollama (`f_` also needs the prompt `e_` registers), not the whole
+track. Each Azure notebook opens with a note saying what it needs.
 Ollama is a documented *system prerequisite*, like the tracking server — not a pip dependency.
 The `openai` client (which talks to both Ollama and OpenAI) is added to the project, and
 `huggingface_hub[cli]` is a dev dep for browsing GGUF models on HF (Ollama can run any GGUF via
 `ollama run hf.co/<repo>:<quant>`).
 
-**Default model:** `qwen3:8b` (about a 5 GB download; Ollama runs it on a GPU when it fits and
-falls back to the CPU otherwise). It's a reasoning model — notebooks append `/no_think` for clean,
-fast traces and turn thinking on where it's the point. Lighter alt: `gemma3:4b`.
+**Default model:** `qwen3:1.7b` (Q4_K_M, about a 1.4 GB download; Ollama runs it on a GPU when it
+fits and falls back to the CPU otherwise). It is the smallest Qwen3 that still calls tools
+reliably, which `d_langchain_agent` needs: through Ollama's OpenAI-compatible endpoint it made
+5 of 5 tool calls correctly, while `qwen3:0.6b` missed 2 of 5. It's a reasoning model — notebooks
+append `/no_think` for clean, fast traces and turn thinking on where it's the point. Stronger,
+heavier alternatives: `qwen3:4b`, `qwen3:14b`. Setup walkthrough:
+[`src/setup/a_ollama_setup.ipynb`](../src/setup/a_ollama_setup.ipynb).
 
 **Status:** `a_`–`i_` **drafted and contiguous** — the full GenAI track, ending in `i_rag_capstone` (a realistic Milvus + LlamaIndex RAG that threads the whole track). All need live runs to capture outputs. `a_tracing_quickstart` ✅ verified (Ollama +
 Azure). `b_` hand-built RAG; `c_` LLM-as-judge (Azure judge via MLflow's native `azure:/`
 provider — no `litellm`; judges read `AZURE_API_KEY`/`AZURE_API_BASE`/`AZURE_API_VERSION`,
 mapped from the repo's `AZURE_OPENAI_*`); `d_` LangChain tool-agent traced by one-line
 `mlflow.langchain.autolog()` (stack verified live on Ollama). `e_` is the prompt registry (register/version/alias + promote the winning version with the
-`c_` judge). `f_` serves a GenAI app over REST (models-from-code; verified live); `g_` closes the loop — human/code feedback on traces (`log_feedback`) + LLM-judge monitoring over `search_traces` (verified live). `b_`–`g_` need full runs to capture outputs.
+`c_` judge). `f_` serves a GenAI app over REST (models-from-code; verified live); `g_` closes the loop — human/code feedback on traces (`log_feedback`) + LLM-judge monitoring over `search_traces` (verified live). `b_`–`g_` need full runs to capture outputs. `a_`, `b_`, `d_` and `f_` are to be re-run on
+`qwen3:1.7b`; the five Azure notebooks keep their stored outputs until they can be re-run against Azure.
 
 | # | Notebook | Teaches | Parallels (ml) |
 |---|----------|---------|----------------|
