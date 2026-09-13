@@ -8,20 +8,25 @@ dependencies = [
     "dspy>=3.2.1",
     "jupyter>=1.1.1",
     "langchain>=1.3.4",
+    "langchain-core>=1.4.0",
     "langchain-openai>=1.2.2",
     "langgraph>=1.2.4",
     "llama-index-core>=0.14.22",
     "llama-index-embeddings-azure-openai>=0.5.2",
     "llama-index-llms-azure-openai>=0.5.5",
     "llama-index-vector-stores-milvus>=1.1.0",
+    "matplotlib>=3.10.9",
     "mlflow>=3.12.0",
+    "numpy>=2.4.4",
     "nvidia-ml-py>=13.610.43",
     "openai>=2.41.0",
     "optuna>=4.8.0",
     "pandas>=2.3.3",
     "pymilvus>=2.6.15",
     "python-dotenv>=1.2.2",
+    "requests>=2.33.1",
     "scikit-learn>=1.8.0",
+    "scipy>=1.17.1",
     "seaborn>=0.13.2",
     "skops>=0.14.0",
     "xgboost>=3.2.0",
@@ -30,4 +35,26 @@ dependencies = [
 [dependency-groups]
 dev = [
     "huggingface-hub>=1.17.0",
+    "ruff>=0.16.7",
 ]
+
+[tool.ruff]
+# `ruff check src/` lints the notebooks: ruff includes *.ipynb files by default,
+# and infers the target Python version from requires-python.
+
+[tool.ruff.lint]
+# ruff's default rule set, spelled out so readers can see what is checked:
+# pycodestyle errors that do not conflict with a formatter (E4, E7, E9) and pyflakes (F).
+select = ["E4", "E7", "E9", "F"]
+
+[tool.ruff.lint.per-file-ignores]
+# E402 (module-level import not at top of cell): a teaching notebook may import a
+# module next to the code that teaches it, or set a warnings filter before the
+# imports whose warnings it silences (ml/h_dataset_logging, ml/j_capstone_end_to_end).
+"*.ipynb" = ["E402"]
+# E401 (several imports on one line, e.g. `import os, re`): these three Azure notebooks
+# keep code cells and stored outputs from real runs that can no longer be repeated,
+# so their cells are left exactly as they ran rather than edited to split the imports.
+"src/gen_ai/e_prompt_registry.ipynb" = ["E401"]
+"src/gen_ai/g_feedback_and_monitoring.ipynb" = ["E401"]
+"src/gen_ai/h_dspy_optimization.ipynb" = ["E401"]
