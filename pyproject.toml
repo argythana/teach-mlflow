@@ -13,7 +13,9 @@ dependencies = [
     "langgraph>=1.2.4",
     "llama-index-core>=0.14.22",
     "llama-index-embeddings-azure-openai>=0.5.2",
+    "llama-index-embeddings-ollama>=0.10.0",
     "llama-index-llms-azure-openai>=0.5.5",
+    "llama-index-llms-ollama>=0.11.0",
     "llama-index-vector-stores-milvus>=1.1.0",
     "matplotlib>=3.10.9",
     "mlflow>=3.12.0",
@@ -35,12 +37,17 @@ dependencies = [
 [dependency-groups]
 dev = [
     "huggingface-hub>=1.17.0",
+    "mdformat>=1.0.0",
+    "mdformat-gfm>=1.0.0",
+    "prek>=0.5.3",
     "ruff>=0.16.7",
 ]
 
 [tool.ruff]
 # `ruff check src/` lints the notebooks: ruff includes *.ipynb files by default,
-# and infers the target Python version from requires-python.
+# and infers the target Python version from requires-python. The pre-commit hooks in
+# .pre-commit-config.yaml run `ruff format` and `ruff check --fix` on notebook code cells.
+line-length = 88
 
 [tool.ruff.lint]
 # ruff's default rule set, spelled out so readers can see what is checked:
@@ -52,9 +59,3 @@ select = ["E4", "E7", "E9", "F"]
 # module next to the code that teaches it, or set a warnings filter before the
 # imports whose warnings it silences (ml/h_dataset_logging, ml/j_capstone_end_to_end).
 "*.ipynb" = ["E402"]
-# E401 (several imports on one line, e.g. `import os, re`): these three Azure notebooks
-# keep code cells and stored outputs from real runs that can no longer be repeated,
-# so their cells are left exactly as they ran rather than edited to split the imports.
-"src/gen_ai/e_prompt_registry.ipynb" = ["E401"]
-"src/gen_ai/g_feedback_and_monitoring.ipynb" = ["E401"]
-"src/gen_ai/h_dspy_optimization.ipynb" = ["E401"]

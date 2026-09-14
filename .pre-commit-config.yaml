@@ -1,0 +1,76 @@
+# Pre-commit hooks for this MLflow teaching repo.
+# Runs with `prek` (a fast pre-commit drop-in, added as a dev dependency):
+#   uv run prek install          # wire the git hook (one-time)
+#   uv run prek run --all-files  # apply to the whole repo
+#   uv run prek run <hook-id> --all-files   # run a single hook, e.g. wrap-notebook-markdown
+#
+# Skipping hooks (prek is pre-commit compatible, so the usual escapes work):
+#   git commit --no-verify                     # skip ALL hooks for this commit (alias: -n)
+#   SKIP=ruff-format-nb git commit -m "..."    # skip ONE hook by id
+#   SKIP=ruff-format-nb,wrap-notebook-markdown git commit -m "..."   # skip several (comma-separated)
+# Hook ids available to SKIP: check-added-large-files, check-json, check-toml,
+#   check-yaml, check-merge-conflict, end-of-file-fixer, trailing-whitespace,
+#   mdformat, ruff-format-nb, ruff-check-nb, wrap-notebook-markdown.
+#
+# The repo is almost entirely Jupyter notebooks (code in code cells, prose in
+# markdown cells) plus a few Markdown docs — the hooks are scoped accordingly.
+default_language_version:
+  python: "python3"
+default_stages: [pre-commit]
+fail_fast: false # run every hook so one failure doesn't hide the rest
+
+repos:
+  - repo: "https://github.com/pre-commit/pre-commit-hooks"
+    rev: "v6.0.0"
+    hooks:
+      - id: "check-added-large-files"
+        args: ["--maxkb=1024"]
+      - id: "check-json" # .ipynb files are JSON — catches a corrupted notebook
+      - id: "check-toml" # pyproject.toml
+      - id: "check-yaml" # this config
+      - id: "check-merge-conflict"
+      - id: "end-of-file-fixer"
+        exclude: "\\.ipynb$" # notebook JSON tail is managed by nbformat
+      - id: "trailing-whitespace"
+        # Preserve markdown hard breaks; notebooks are formatted by their own hooks.
+        exclude: "\\.(md|ipynb)$"
+
+  # Project tools, pinned via uv.lock (the repo's single source of truth) and run
+  # through `uv run` rather than pre-commit-managed envs.
+  - repo: local
+    hooks:
+      # Standalone Markdown docs: README, CLAUDE.md, roadmap/*.md
+      - id: "mdformat"
+        name: "mdformat (Markdown docs, wrap 88)"
+        entry: uv run mdformat --wrap 88
+        language: system
+        files: "\\.md$"
+        # Skill files (.claude/skills/**) carry YAML frontmatter that plain
+        # mdformat rewrites into a heading — leave them to their own tooling.
+        exclude: "^\\.claude/"
+        require_serial: true
+
+      # Notebook CODE cells — ruff has native .ipynb support (format, then lint-fix).
+      - id: "ruff-format-nb"
+        name: "ruff format (notebook code cells)"
+        entry: uv run ruff format
+        language: system
+        files: "\\.ipynb$"
+        require_serial: true
+      - id: "ruff-check-nb"
+        name: "ruff check --fix (notebook code cells)"
+        entry: uv run ruff check --fix
+        language: system
+        files: "\\.ipynb$"
+        require_serial: true
+
+      # Notebook MARKDOWN cells — wrap prose in the source at the first
+      # . ? ; : — mark after the width (soft breaks so the render re-flows), and
+      # justify each cell (--justify); headings stay left-aligned. Leaves code
+      # cells and outputs intact. See tools/wrap_notebook_markdown.py.
+      - id: "wrap-notebook-markdown"
+        name: "wrap + justify (notebook markdown cells)"
+        entry: uv run python tools/wrap_notebook_markdown.py --width 120 --justify
+        language: system
+        files: "\\.ipynb$"
+        require_serial: true
