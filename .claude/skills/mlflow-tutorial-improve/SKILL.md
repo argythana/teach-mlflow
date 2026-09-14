@@ -269,7 +269,7 @@ of citing your sources.
 
 What to link (and to where):
 
-- **Models** → their model card / library page. `gemma3:4b`, `qwen3:8b`,
+- **Models** → their model card / library page. `gemma3:4b`, `qwen3:1.7b`,
   `nomic-embed-text` → their `ollama.com/library/<model>` pages; a claim about
   *reasoning* models → the model's own blog/announcement.
 - **Libraries and frameworks** → their docs home. LangChain, LlamaIndex, DSPy, Optuna,
