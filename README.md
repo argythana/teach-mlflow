@@ -32,11 +32,11 @@ Notebooks are grouped by track. Each folder is prefixed `a_`, `b_`, `c_`, … so
 - `i_system_metrics` — `system/*` resource observability (CPU / RAM / GPU) under a heavy training load.
 - `j_capstone_end_to_end` — one model through the full lifecycle: feature-engineer → tune → evaluate → gate → register → serve.
 
-That completes the traditional-ML MLOps spine (tracking → evaluation → registry → serving).
+Together these form the traditional-ML MLOps spine (tracking → evaluation → registry → serving).
 
 **`gen_ai/` — GenAI / LLM track** (local server on port `5001`): tracing, LLM-as-judge evaluation, the prompt registry, serving, and feedback and monitoring — where the MLflow **Traces** tab lights up.
 
-Status: **feature-complete (drafts)**. All nine notebooks are written, in reading order, but not all have been run end to end, so some stored outputs may be missing or out of date. Besides the tracking server, the track needs a local Ollama model and, for five notebooks, a hosted Azure OpenAI deployment — see [GenAI track prerequisites](#genai-track-prerequisites).
+Besides the tracking server, the track needs a local Ollama model and, for five notebooks, a hosted Azure OpenAI deployment — see [GenAI track prerequisites](#genai-track-prerequisites).
 
 - `a_tracing_quickstart` — automatic and manual tracing (`mlflow.openai.autolog()`, `@mlflow.trace`) against a local Ollama model; spans, traces, and the Traces tab.
 - `b_tracing_a_multistep_app` — a hand-built RAG pipeline with nested retriever / chain / LLM spans, and how the trace shows which step produced a bad answer.
@@ -91,7 +91,7 @@ The `gen_ai/` notebooks call a language model, so they need more than the tracki
 - `h_dspy_optimization` — the model DSPy optimizes against.
 - `i_rag_capstone` — the embeddings, the answering model, and the judge.
 
-Each of the five opens with a short note on what it needs and on its stored outputs, so you can still read them without an Azure deployment.
+Each of the five opens with a short note on what it needs, so you can still read them without an Azure deployment.
 
 `a_tracing_quickstart` also has an optional Azure section, and `d_langchain_agent` shows a commented-out Azure swap.
 
