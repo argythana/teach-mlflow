@@ -1,59 +1,164 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in
+this repository.
 
 ## Purpose
 
-This is a **learning/teaching repository** for MLflow, not a library or service. The goal is to build tutorials and explanations that take a reader from "I know Python and ML" to advanced MLflow / MLOps topics (tracking, registry, serving). The target audience is researchers and data scientists who are *not* familiar with running servers, model serving, or MLOps — including students at universities that do not teach MLflow.
+This is a **learning/teaching repository** for MLflow, not a library or service. The
+goal is to build tutorials and explanations that take a reader from "I know Python and
+ML" to advanced MLflow / MLOps topics (tracking, registry, serving). The target audience
+is researchers and data scientists who are *not* familiar with running servers, model
+serving, or MLOps — including students at universities that do not teach MLflow.
 
-Source material starts from the official MLflow docs/tutorials and is augmented where they are unclear, skip a step, or fail to motivate why the feature exists. Treat `src/basics/b_tracking_quickstart.ipynb` as the canonical example of how to add value on top of upstream material — in particular its "Start the tracking server first" section, which opens with a `**Missing from upstream tutorial:**` callout, and the "MLflow Default Database and Registry store URI" deep-dive (three-store table, "what changed in MLflow 3", problem→feature framing).
+Source material starts from the official MLflow docs/tutorials and is augmented where
+they are unclear, skip a step, or fail to motivate why the feature exists. Treat
+`src/basics/b_tracking_quickstart.ipynb` as the canonical example of how to add value on
+top of upstream material — in particular its "Start the tracking server first" section,
+which opens with a `**Missing from upstream tutorial:**` callout, and the "MLflow
+Default Database and Registry store URI" deep-dive (three-store table, "what changed in
+MLflow 3", problem→feature framing).
 
 ## Teaching philosophy
 
-When adding to, expanding, restructuring, or cleaning up a tutorial, follow these editorial principles. The `mlflow-tutorial-improve` skill at `.claude/skills/mlflow-tutorial-improve/` codifies them in more detail.
+When adding to, expanding, restructuring, or cleaning up a tutorial, follow these
+editorial principles. The `mlflow-tutorial-improve` skill at
+`.claude/skills/mlflow-tutorial-improve/` codifies them in more detail.
 
-- **Explain terminology, but stay concise.** Define jargon the first time it appears (e.g. *backend store*, *artifact store*, *registered model*, *pyfunc*). One short paragraph or a table, not a wall of text.
-- **Motivate every feature with the problem it solves.** Before showing *how* to call an API, explain *why* a data scientist or ML system would need it. What goes wrong without it? What does it replace (notes in a spreadsheet, ad-hoc pickle files, "ask the author")?
-- **Connect to Data Science / MLOps / ML systems context.** Frame each MLflow feature in terms of reproducibility, observability, collaboration, deployment, or governance — the concerns that distinguish research/production ML from a one-off notebook.
-- **Add examples only when they add value.** A second example must teach something the first did not (an edge case, an override, a contrast). Do not pad notebooks with redundant variations.
-- **Keep notebooks short.** A long notebook is a sign that two topics have been mashed together — split it (e.g. `a_setup_mlflow` and `b_tracking_quickstart`).
-- **Surface MLflow version drift.** MLflow 3 changed several defaults (e.g. `sqlite:///mlflow.db` backend, registry enabled by default). Call these out when a reader following an older blog post or tutorial would be confused.
-- **Annotate additions clearly.** When a paragraph corrects, supplements, or deliberately departs from upstream, open it with one inline bold callout — `**Bug in upstream tutorial:**`, `**Stale in upstream tutorial:**`, `**Missing from upstream tutorial:**`, or `**Diverges from upstream tutorial:**` — so a reader can tell upstream content from this repo's value-add. Callouts are not heading prefixes, and a paragraph carries at most one. A standalone topic with no upstream counterpart gets a plain `## <Topic>` heading instead.
-- **Keep upstream content recognizable.** Do not rewrite official tutorials — wrap them with prerequisites, context, and follow-ups.
-- **Write for a public reader, not this machine.** These are public tutorials on GitHub, run by strangers on unknown hardware and setups. Don't state this PC's specs as the reader's ("your 8 GB GPU"), don't narrate build/run history ("verified on this laptop", "added earlier today"), and treat machine-dependent numbers (latency, VRAM, GPU model, home-directory paths) as illustrative examples — "in one run you'll see something like…" — never as universal facts. State what the task needs and offer choices for different setups. Running notebooks live is still the goal; the point is to *frame* the results for a stranger. The `mlflow-tutorial-improve` skill (principle 10) details this.
+- **Explain terminology, but stay concise.** Define jargon the first time it appears
+  (e.g. *backend store*, *artifact store*, *registered model*, *pyfunc*). One short
+  paragraph or a table, not a wall of text.
+- **Motivate every feature with the problem it solves.** Before showing *how* to call an
+  API, explain *why* a data scientist or ML system would need it. What goes wrong
+  without it? What does it replace (notes in a spreadsheet, ad-hoc pickle files, "ask
+  the author")?
+- **Connect to Data Science / MLOps / ML systems context.** Frame each MLflow feature in
+  terms of reproducibility, observability, collaboration, deployment, or governance —
+  the concerns that distinguish research/production ML from a one-off notebook.
+- **Add examples only when they add value.** A second example must teach something the
+  first did not (an edge case, an override, a contrast). Do not pad notebooks with
+  redundant variations.
+- **Keep notebooks short.** A long notebook is a sign that two topics have been mashed
+  together — split it (e.g. `a_setup_mlflow` and `b_tracking_quickstart`).
+- **Surface MLflow version drift.** MLflow 3 changed several defaults (e.g.
+  `sqlite:///mlflow.db` backend, registry enabled by default). Call these out when a
+  reader following an older blog post or tutorial would be confused.
+- **Annotate additions clearly.** When a paragraph corrects, supplements, or
+  deliberately departs from upstream, open it with one inline bold callout —
+  `**Bug in upstream tutorial:**`, `**Stale in upstream tutorial:**`,
+  `**Missing from upstream tutorial:**`, or `**Diverges from upstream tutorial:**` — so
+  a reader can tell upstream content from this repo's value-add. Callouts are not
+  heading prefixes, and a paragraph carries at most one. A standalone topic with no
+  upstream counterpart gets a plain `## <Topic>` heading instead. The older
+  `## MISSING FROM THE OFFICIAL TUTORIAL` heading is **retired**; the
+  `mlflow-tutorial-improve` skill (principle 9) is the source of truth for this
+  vocabulary.
+- **Keep upstream content recognizable.** Do not rewrite official tutorials — wrap them
+  with prerequisites, context, and follow-ups.
+- **Write for a public reader, not this machine.** These are public tutorials on GitHub,
+  run by strangers on unknown hardware and setups. Don't state this PC's specs as the
+  reader's ("your 8 GB GPU"), don't narrate build/run history ("verified on this
+  laptop", "added earlier today"), and treat machine-dependent numbers (latency, VRAM,
+  GPU model, home-directory paths) as illustrative examples — "in one run you'll see
+  something like…" — never as universal facts. State what the task needs and offer
+  choices for different setups. Running notebooks live is still the goal; the point is
+  to *frame* the results for a stranger. The `mlflow-tutorial-improve` skill (principle
+  10\) details this.
 
 ## Environment
 
 - Python **3.14** (`pyproject.toml` pins `requires-python = ">=3.14"`).
-- A local venv lives at `.venv/`. **direnv** activates it via `.envrc` (`source ./.venv/bin/activate`); if direnv is not loaded, activate manually with `source .venv/bin/activate`.
-- **Dependency management uses `uv` exclusively. Do not use `pip`** — do not bootstrap it with `ensurepip`, do not seed the venv with `uv venv --seed`, do not run `pip install` or `uv pip install`. All package changes go through the uv project workflow so `pyproject.toml` and `uv.lock` stay the single source of truth.
+- A local venv lives at `.venv/`. **direnv** activates it via `.envrc`
+  (`source ./.venv/bin/activate`); if direnv is not loaded, activate manually with
+  `source .venv/bin/activate`.
+- **Dependency management uses `uv` exclusively. Do not use `pip`** — do not bootstrap
+  it with `ensurepip`, do not seed the venv with `uv venv --seed`, do not run
+  `pip install` or `uv pip install`. All package changes go through the uv project
+  workflow so `pyproject.toml` and `uv.lock` stay the single source of truth.
   - Add a dependency: `uv add <package>` (use `--dev` for dev-only tools).
   - Remove: `uv remove <package>`.
   - Reproduce the environment on a fresh checkout: `uv sync`.
   - Commit `uv.lock` along with `pyproject.toml` changes.
+- **Formatting and linting run as pre-commit hooks through `prek`**
+  (`.pre-commit-config.yaml`; wire the git hook once with `uv run prek install`, or run
+  `uv run prek run --all-files`): `mdformat --wrap 88` for the Markdown docs,
+  `ruff format` + `ruff check --fix` for notebook code cells, and
+  `tools/wrap_notebook_markdown.py --width 120 --justify` for notebook markdown cells.
+  Let the hooks wrap prose; don't hand-wrap.
 
 ## Running the MLflow tutorials
 
-The notebooks assume a **local MLflow tracking server is already running**. Before executing any cell that calls `mlflow.set_tracking_uri(...)`, start the server in a separate terminal from `src/`, on the port the notebook expects (`5000` for `basics/`, `5001` for `ml/` and `gen_ai/`):
+The notebooks assume a **local MLflow tracking server is already running**. Before
+executing any cell that calls `mlflow.set_tracking_uri(...)`, start the server in a
+separate terminal from `src/`, on the port the notebook expects (`5000` for `basics/`,
+`5001` for `ml/` and `gen_ai/`):
 
 ```bash
 cd src/
 mlflow ui --host 127.0.0.1 --port 5000   # 5001 for ml/ and gen_ai/
 ```
 
-In MLflow 3+ this creates `mlflow.db` (SQLite backend store) and an `mlartifacts/` directory in the cwd — always start the server from `src/` so these land in one predictable place; README.md and every notebook's prerequisites say the same. Both are per-developer runtime state and are gitignored. The official upstream quickstart **omits the "start the server first" step**; surfacing prerequisites like this is part of the teaching value-add of this repo.
+In MLflow 3+ this creates `mlflow.db` (SQLite backend store) and an `mlartifacts/`
+directory in the cwd — always start the server from `src/` so these land in one
+predictable place; README.md and every notebook's prerequisites say the same. The
+advanced tracks share port 5001 on purpose: the model registry across `ml/` and the
+prompt registry written in `gen_ai/e_` then loaded by `f_`/`i_` all have to resolve
+against the *same* store. Both files are per-developer runtime state and are gitignored.
+The official upstream quickstart **omits the "start the server first" step**; surfacing
+prerequisites like this is part of the teaching value-add of this repo.
 
-The server's directory is separate from each notebook's working directory. Run a notebook with its own folder (`src/basics/`, `src/ml/`, `src/gen_ai/`) as the cwd, which is Jupyter's default: executing a notebook with the repo root as its cwd makes MLflow write the absolute path of `pyproject.toml` into the stored outputs.
+The server's directory is separate from each notebook's working directory. Run a
+notebook with its own folder (`src/basics/`, `src/ml/`, `src/gen_ai/`) as the cwd, which
+is Jupyter's default: executing a notebook with the repo root as its cwd makes MLflow
+write the absolute path of `pyproject.toml` into the stored outputs.
 
-The `gen_ai/` notebooks also need a local **Ollama** model, `qwen3:1.7b` (Q4_K_M, about a 1.4 GB download), set up in `src/setup/a_ollama_setup.ipynb`. Five of them (`c_genai_evaluation`, `e_prompt_registry`, `g_feedback_and_monitoring`, `h_dspy_optimization`, `i_rag_capstone`) also need an Azure OpenAI deployment; see README.md. Each of the five opens with a note saying so. Keep their stored outputs as they are unless you can re-run them against Azure.
+**Ollama (the `gen_ai/` track only).** The GenAI notebooks call a local LLM through
+[Ollama](https://github.com/ollama/ollama) — a **system prerequisite, not a Python
+dependency**. `uv sync` does not install it; the Python `ollama` client that ships
+transitively with `llama-index-llms-ollama` is a client library, unrelated to installing
+the runtime. The whole track runs locally, with no API key:
+
+```bash
+ollama pull gemma3:4b         # default — generation, the LLM-as-judge, and DSPy's LM
+ollama pull qwen3:1.7b        # only d_langchain_agent, which needs tool-calling
+ollama pull nomic-embed-text  # only i_rag_capstone — its embedding model
+```
+
+`gemma3:4b` is the default because it is small, fast, and non-reasoning: it answers
+directly, without the hidden-thinking token cost of a model like `qwen3`, and its
+replies parse cleanly where the track needs structured output (the `ollama:/gemma3:4b`
+judge in `c_`/`e_`/`g_`/`i_`, DSPy's `ollama_chat/gemma3:4b` in `h_`). `qwen3:1.7b`
+appears only in `d_`, because `gemma3:4b` cannot call tools. The reader-facing setup
+guide is `src/setup/a_ollama_setup.ipynb`. Hosted models (OpenAI / Azure) appear only as
+optional, guarded or commented swaps that read `AZURE_OPENAI_*` from the gitignored
+`.env`; no notebook requires them, and keep it that way. (`gen_ai/f_genai_app_serving`
+additionally starts a model-serving process on **5002** — that's the served app, not a
+tracking server.) The `basics/` and `ml/` tracks don't need Ollama.
 
 ## Repository layout
 
-- `src/` — adapted MLflow tutorial notebooks, grouped by track and ordered with `a_`, `b_`, `c_` prefixes so the intended reading sequence is obvious from `ls`. Each notebook stays close to the upstream original but adds prerequisites, terminology, and "why this feature exists" context per the [Teaching philosophy](#teaching-philosophy) above.
-  - `src/basics/` — track-agnostic foundations both tracks build on (`a_setup_mlflow`, `b_tracking_quickstart`).
-  - `src/ml/` — the traditional-ML track (`a_model_logging` … `j_capstone_end_to_end`): model logging, tuning, plots, evaluation, registry, serving, dataset logging, system metrics, capstone.
-  - `src/gen_ai/` — the GenAI / LLM track (`a_tracing_quickstart` … `i_rag_capstone`): tracing, LLM-as-judge evaluation, the prompt registry, serving, feedback and monitoring, DSPy prompt optimization, and a RAG capstone. Status: feature-complete (drafts) — every notebook is written, but not all have been run end to end.
-- `roadmap/` — the master roadmap summary (`roadmap.md`) and the build-out plan (`plan.md`).
+- `src/` — adapted MLflow tutorial notebooks, grouped by track and ordered with `a_`,
+  `b_`, `c_` prefixes so the intended reading sequence is obvious from `ls`. Each
+  notebook stays close to the upstream original but adds prerequisites, terminology, and
+  "why this feature exists" context per the [Teaching philosophy](#teaching-philosophy)
+  above.
+  - `src/basics/` — track-agnostic foundations both tracks build on (`a_setup_mlflow`,
+    `b_tracking_quickstart`).
+  - `src/ml/` — the traditional-ML track (`a_model_logging` … `j_capstone_end_to_end`):
+    model logging, tuning, plots, evaluation, registry, serving, dataset logging, system
+    metrics, capstone.
+  - `src/gen_ai/` — the GenAI / LLM track (`a_tracing_quickstart` … `i_rag_capstone`):
+    tracing, LLM-as-judge evaluation, a LangChain agent, the prompt registry, serving,
+    feedback and monitoring, DSPy prompt optimization, and a RAG capstone.
+  - `src/setup/` — one-time setup guides outside the reading order (`a_ollama_setup`).
+- `tools/` — repo maintenance scripts: `wrap_notebook_markdown.py`, the
+  notebook-markdown formatter the pre-commit hook runs.
+- `.github/workflows/notebooks.yml` — CI that executes the `basics/` and `ml/` notebooks
+  on every push to `main`; `gen_ai/` is excluded because it needs Ollama.
+- `roadmap/` — the master roadmap summary (`roadmap.md`) and the build-out plan
+  (`plan.md`).
 - `README.md` — audience, motivation, and setup for readers of the repo.
-- `pyproject.toml` / `uv.lock` — dependencies grow as tutorials cover more MLflow features (`mlflow`, `jupyter`, `scikit-learn`, `skops`, `optuna`, …).
-- `.claude/skills/mlflow-tutorial-improve/` — editorial skill for expanding, restructuring, and cleaning up upstream tutorials in the project's house style.
+- `pyproject.toml` / `uv.lock` — dependencies grow as tutorials cover more MLflow
+  features (`mlflow`, `jupyter`, `scikit-learn`, `skops`, `optuna`, …).
+- `.claude/skills/mlflow-tutorial-improve/` — editorial skill for expanding,
+  restructuring, and cleaning up upstream tutorials in the project's house style.

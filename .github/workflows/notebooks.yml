@@ -19,9 +19,9 @@
 # GitHub-hosted runners have no GPU: the device="cuda" run in
 # src/ml/i_system_metrics.ipynb falls back to CPU with an XGBoost warning.
 #
-# Excluded: every notebook in src/gen_ai/. Each one calls a large language
-# model through Ollama (a local model server the runner does not have) or
-# Azure OpenAI (a paid service that needs an API key), so none can run here:
+# Excluded: every notebook in src/gen_ai/ and src/setup/. Each one calls a
+# local language model through Ollama, a model server the runner does not
+# have, so none can run here:
 #   src/gen_ai/a_tracing_quickstart.ipynb
 #   src/gen_ai/b_tracing_a_multistep_app.ipynb
 #   src/gen_ai/c_genai_evaluation.ipynb
@@ -31,6 +31,7 @@
 #   src/gen_ai/g_feedback_and_monitoring.ipynb
 #   src/gen_ai/h_dspy_optimization.ipynb
 #   src/gen_ai/i_rag_capstone.ipynb
+#   src/setup/a_ollama_setup.ipynb
 
 name: Notebooks
 
