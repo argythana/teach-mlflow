@@ -2,6 +2,9 @@
 # push to main proves the offline half of the course still runs. Any cell error
 # fails the job. The workflow uses no credentials of any kind.
 #
+# A separate lint job runs `ruff check src/` with the ruff version pinned in
+# uv.lock and the rules in pyproject.toml; ruff lints the notebooks' code cells.
+#
 # Ports, as the notebooks hard-code them:
 #   5000  tracking server for src/basics/
 #   5001  tracking server for src/ml/
@@ -50,6 +53,31 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  lint:
+    name: Lint with ruff
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Python 3.14
+        uses: actions/setup-python@v7.0.0
+        with:
+          python-version: "3.14"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.1.0
+        with:
+          enable-cache: true
+
+      # --only-dev installs just the dev group (ruff) from uv.lock, not the
+      # course's runtime dependencies.
+      - name: Run ruff check src/
+        run: uv run --locked --only-dev ruff check src/
+
   execute:
     name: Execute basics and ml notebooks
     runs-on: ubuntu-latest
