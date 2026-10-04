@@ -1,0 +1,268 @@
+# Executes src/setup/a_ollama_setup.ipynb and every notebook in src/gen_ai/ top
+# to bottom against local language models served by Ollama on the runner, so
+# the GenAI half of the course is proven to run too. Any cell error fails the
+# job. The workflow uses no credentials and calls no hosted model: there is no
+# .env on the runner and no secret is passed in, so every optional Azure/OpenAI
+# cell takes its "skipped / no credentials" branch.
+#
+# Why a separate workflow from notebooks.yml: the job needs an Ollama server and
+# about 5 GB of model weights, and on a CPU-only runner it takes over an hour.
+# It runs weekly, on demand, and on pushes to main that touch the GenAI
+# notebooks, rather than on every push and pull request.
+#
+# Models, exactly the ones the track documents (src/setup/a_ollama_setup.ipynb):
+#   gemma3:4b         chat model and LLM judge for most notebooks (3.3 GB)
+#   qwen3:1.7b        tool-calling model for d_langchain_agent (1.4 GB)
+#   nomic-embed-text  embedding model for i_rag_capstone (0.3 GB)
+# Ollama is installed with its official Linux script at a pinned version
+# (OLLAMA_VERSION; bump it deliberately) and runs as `ollama serve` on 11434. The
+# model directory is cached with actions/cache, keyed on the model list; every
+# run still calls `ollama pull`, which only checks the registry when the
+# weights are already there.
+#
+# Ports, as the notebooks hard-code them:
+#   11434  Ollama
+#   5001   tracking server for src/gen_ai/ (src/setup/ uses none)
+#   5002   model server. src/gen_ai/f_genai_app_serving.ipynb starts `mlflow
+#          models serve` itself (its "Option A" cell) and stops it at the end,
+#          so the workflow starts nothing on 5002; it only checks that the port
+#          is free before and after that notebook.
+#
+# Each notebook runs with its own directory as the working directory, as a
+# reader runs it, in reading order: setup first, then gen_ai a_ to i_. The
+# tracking server runs from $RUNNER_TEMP, so its mlflow.db and mlartifacts/ stay
+# out of the checkout. Executed copies are written to $RUNNER_TEMP too; the
+# tracked notebooks are never overwritten. f_ and i_ write the gitignored files
+# src/gen_ai/_genai_app.py and src/gen_ai/milvus_rag.db, as they do for a reader.
+#
+# Timing: GitHub-hosted runners have no GPU, so every model call runs on 4 CPU
+# cores, one at a time (the notebooks run judges serially). Expect roughly
+# 60-120 minutes in all, with the evaluation-heavy notebooks (c_, e_, h_, i_)
+# taking 10-25 minutes each; a single cell can take several minutes, hence the
+# generous per-cell timeout. A failing notebook does not stop the later ones;
+# the step fails at the end and lists every notebook that failed.
+
+name: GenAI notebooks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/gen_ai/**"
+      - "src/setup/**"
+      - ".github/workflows/genai-notebooks.yml"
+  schedule:
+    - cron: "17 3 * * 1" # Mondays 03:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  execute:
+    name: Execute setup and gen_ai notebooks on Ollama
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      # Seconds a single cell may run. The longest cells call the local judge
+      # 15-20 times in a row on CPU (e_prompt_registry, i_rag_capstone).
+      CELL_TIMEOUT: "3600"
+      # Pinned so a new Ollama release cannot change model behaviour unnoticed.
+      OLLAMA_VERSION: "0.34.0"
+      # Space-separated; also the cache key, so editing it re-downloads.
+      OLLAMA_PULL_MODELS: "gemma3:4b qwen3:1.7b nomic-embed-text"
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      # The hosted-model cells only run when AZURE_OPENAI_* or OPENAI_API_KEY
+      # are set, from the environment or a .env file. Make sure neither exists.
+      - name: Check that no model credentials are present
+        run: |
+          if [ -e .env ]; then
+            echo "A .env file is present; this workflow must run without one"
+            exit 1
+          fi
+          if env | grep -Eq '^(AZURE_OPENAI_[A-Z_]*|AZURE_API_[A-Z_]*|OPENAI_API_KEY)='; then
+            echo "Model credentials are set in the environment"
+            exit 1
+          fi
+          echo "No .env file and no model credentials: hosted-model cells will be skipped"
+
+      # Ollama (about 4 GB unpacked), the models, the actions/cache archive of
+      # them and the virtual environment need more room than the runner keeps
+      # free. The Android SDK and .NET are unused here.
+      - name: Free disk space
+        run: |
+          df -h /
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet
+          df -h /
+
+      - name: Install Python 3.14
+        uses: actions/setup-python@v7.0.0
+        with:
+          python-version: "3.14"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.1.0
+        with:
+          enable-cache: true
+
+      - name: Install dependencies from uv.lock
+        run: |
+          uv sync --locked
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
+
+      # The official script also registers and starts a systemd service that
+      # runs as the ollama user with its models under /usr/share/ollama. Stop
+      # and disable it, so the server the notebooks reach is the one started
+      # below as the runner user, with its models in ~/.ollama/models, a
+      # directory actions/cache can restore and save without sudo.
+      - name: Install Ollama ${{ env.OLLAMA_VERSION }}
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          sudo systemctl disable --now ollama
+
+      - name: Compute the model cache key
+        id: models
+        run: |
+          echo "key=ollama-models-${RUNNER_OS}-$(echo "$OLLAMA_PULL_MODELS" | tr ' :' '-_')" >> "$GITHUB_OUTPUT"
+
+      # Restore and save are separate steps so the models are saved as soon as
+      # they are pulled, even when a notebook fails later in the job.
+      - name: Restore cached Ollama models
+        id: cache
+        uses: actions/cache/restore@v6.1.0
+        with:
+          path: ~/.ollama/models
+          key: ${{ steps.models.outputs.key }}
+
+      # OLLAMA_CONTEXT_LENGTH matches the 4096-token context of the run that
+      # produced the stored outputs. One request at a time keeps the KV cache
+      # small, and models stay loaded between notebooks instead of unloading
+      # after Ollama's default 5 idle minutes.
+      - name: Start Ollama on 11434 and pull the models
+        env:
+          OLLAMA_CONTEXT_LENGTH: "4096"
+          OLLAMA_NUM_PARALLEL: "1"
+          OLLAMA_KEEP_ALIVE: "60m"
+        run: |
+          nohup ollama serve > "$RUNNER_TEMP/ollama.log" 2>&1 &
+          for _ in $(seq 60); do
+            if curl -fsS http://127.0.0.1:11434/api/version > /dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          if ! curl -fsS http://127.0.0.1:11434/api/version; then
+            cat "$RUNNER_TEMP/ollama.log"
+            exit 1
+          fi
+          echo
+          for model in $OLLAMA_PULL_MODELS; do
+            ollama pull "$model"
+          done
+          ollama list
+          du -sh ~/.ollama/models
+          df -h /
+
+      - name: Save Ollama models to the cache
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v6.1.0
+        with:
+          path: ~/.ollama/models
+          key: ${{ steps.models.outputs.key }}
+
+      # Load both chat models into memory once, so the first call in a
+      # notebook does not spend its client timeout (60 s in most notebooks)
+      # loading weights from disk.
+      - name: Warm up the chat models
+        run: |
+          for model in gemma3:4b qwen3:1.7b; do
+            curl -fsS http://127.0.0.1:11434/api/generate \
+              -d "{\"model\": \"$model\", \"keep_alive\": \"60m\"}" > /dev/null
+            echo "$model loaded"
+          done
+          ollama ps
+
+      - name: Start MLflow tracking server on 5001 (gen_ai)
+        run: |
+          dir="$RUNNER_TEMP/mlflow-5001"
+          mkdir -p "$dir"
+          (cd "$dir" && nohup mlflow server --host 127.0.0.1 --port 5001 > server.log 2>&1 &)
+          for _ in $(seq 120); do
+            if curl -fsS http://127.0.0.1:5001/health > /dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          if ! curl -fsS http://127.0.0.1:5001/health > /dev/null; then
+            cat "$dir/server.log"
+            exit 1
+          fi
+          echo "MLflow tracking server is up on port 5001"
+
+      - name: Execute the setup and gen_ai notebooks
+        run: |
+          failed=()
+
+          port_5002_free() {
+            ! ss -Hltn "sport = :5002" | grep -q .
+          }
+
+          run_notebook() {
+            local dir=$1 nb=$2 start=$SECONDS
+            echo "==> $dir/$nb (started $(date -u +%H:%M:%S) UTC)"
+            if (cd "$dir" && jupyter nbconvert --to notebook --execute \
+                  --ExecutePreprocessor.timeout="$CELL_TIMEOUT" \
+                  --output-dir "$RUNNER_TEMP/executed/$(basename "$dir")" "$nb"); then
+              echo "<== $dir/$nb passed in $(( (SECONDS - start) / 60 )) min"
+            else
+              echo "::error file=$dir/$nb::$dir/$nb failed after $(( (SECONDS - start) / 60 )) min"
+              failed+=("$dir/$nb")
+            fi
+          }
+
+          run_notebook src/setup a_ollama_setup.ipynb
+
+          for path in src/gen_ai/*.ipynb; do
+            nb=$(basename "$path")
+            if [ "$nb" = f_genai_app_serving.ipynb ] && ! port_5002_free; then
+              echo "::error::Port 5002 is busy, but $nb starts its own model server there"
+              failed+=("src/gen_ai/$nb")
+              continue
+            fi
+            run_notebook src/gen_ai "$nb"
+            if [ "$nb" = f_genai_app_serving.ipynb ]; then
+              # Its last cell stops the server it started; wait for the port.
+              for _ in $(seq 30); do
+                if port_5002_free; then break; fi
+                sleep 1
+              done
+              if port_5002_free; then
+                echo "Port 5002 is free again"
+              else
+                echo "::warning::Port 5002 is still in use after $nb"
+              fi
+            fi
+          done
+
+          if [ ${#failed[@]} -gt 0 ]; then
+            echo "Notebooks that failed:"
+            printf '  %s\n' "${failed[@]}"
+            exit 1
+          fi
+          echo "All notebooks passed"
+
+      - name: Show server logs
+        if: failure()
+        run: |
+          ollama ps || true
+          for log in "$RUNNER_TEMP/mlflow-5001/server.log" "$RUNNER_TEMP/ollama.log"; do
+            if [ -f "$log" ]; then
+              echo "===== $log"
+              tail -n 200 "$log"
+            fi
+          done
