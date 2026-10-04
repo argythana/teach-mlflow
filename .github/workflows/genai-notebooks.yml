@@ -71,6 +71,12 @@ jobs:
       # Seconds a single cell may run. The longest cells call the local judge
       # 15-20 times in a row on CPU (e_prompt_registry, i_rag_capstone).
       CELL_TIMEOUT: "3600"
+      # CPU runners vary a lot in speed. MLflow's defaults are tuned for GPUs or
+      # hosted models: the model server cuts a request off after 60 s (f_ asks it
+      # two questions per request), and an evaluation gives up on a prediction or
+      # judge call after 300 s. The served app inherits these from the job env.
+      MLFLOW_SCORING_SERVER_REQUEST_TIMEOUT: "900"
+      MLFLOW_GENAI_EVAL_ASYNC_TIMEOUT: "1800"
       # Pinned so a new Ollama release cannot change model behaviour unnoticed.
       OLLAMA_VERSION: "0.34.0"
       # Space-separated; also the cache key, so editing it re-downloads.
@@ -255,6 +261,17 @@ jobs:
             exit 1
           fi
           echo "All notebooks passed"
+
+      # The executed copies hold every output, including per-row judge errors
+      # that the job log does not show; keep them for a week to diagnose failures.
+      - name: Upload the executed notebooks
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: executed-notebooks
+          path: ${{ runner.temp }}/executed/
+          retention-days: 7
+          if-no-files-found: warn
 
       - name: Show server logs
         if: failure()
