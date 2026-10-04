@@ -147,6 +147,8 @@ tracking server.) The `basics/` and `ml/` tracks don't need Ollama.
   - `src/ml/` — the traditional-ML track (`a_model_logging` … `j_capstone_end_to_end`):
     model logging, tuning, plots, evaluation, registry, serving, dataset logging, system
     metrics, capstone.
+  - `src/setup/` — environment setup outside MLflow (`a_ollama_setup`: install Ollama,
+    pull and check the local models the GenAI track uses).
   - `src/gen_ai/` — the GenAI / LLM track (`a_tracing_quickstart` … `i_rag_capstone`):
     tracing, LLM-as-judge evaluation, a LangChain agent, the prompt registry, serving,
     feedback and monitoring, DSPy prompt optimization, and a RAG capstone.
