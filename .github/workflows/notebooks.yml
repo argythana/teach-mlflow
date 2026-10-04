@@ -30,9 +30,10 @@
 # GitHub-hosted runners have no GPU: the device="cuda" run in
 # src/ml/i_system_metrics.ipynb falls back to CPU with an XGBoost warning.
 #
-# Excluded: every notebook in src/gen_ai/ and src/setup/. Each one calls a
-# local language model through Ollama, a model server the runner does not
-# have, so none can run here (the test job still checks their stored outputs):
+# Not executed here: every notebook in src/gen_ai/ and src/setup/. Each one
+# calls a local language model through Ollama, so they run in the separate
+# genai-notebooks.yml workflow, which installs Ollama and pulls the models
+# (the test job here still checks their stored outputs):
 #   src/gen_ai/a_tracing_quickstart.ipynb
 #   src/gen_ai/b_tracing_a_multistep_app.ipynb
 #   src/gen_ai/c_genai_evaluation.ipynb

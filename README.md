@@ -1,6 +1,7 @@
 # Teach MLflow — from beginner to advanced
 
 [![Notebooks](https://github.com/argythana/teach-mlflow/actions/workflows/notebooks.yml/badge.svg?branch=main)](https://github.com/argythana/teach-mlflow/actions/workflows/notebooks.yml?query=branch%3Amain)
+[![GenAI notebooks](https://github.com/argythana/teach-mlflow/actions/workflows/genai-notebooks.yml/badge.svg?branch=main)](https://github.com/argythana/teach-mlflow/actions/workflows/genai-notebooks.yml?query=branch%3Amain)
 
 Tutorials and teaching material for MLflow, aimed at researchers and data scientists who
 know Python and ML but are new to tracking servers, model serving, and MLOps.

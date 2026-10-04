@@ -151,10 +151,16 @@ tracking server.) The `basics/` and `ml/` tracks don't need Ollama.
     tracing, LLM-as-judge evaluation, a LangChain agent, the prompt registry, serving,
     feedback and monitoring, DSPy prompt optimization, and a RAG capstone.
   - `src/setup/` — one-time setup guides outside the reading order (`a_ollama_setup`).
+- `tests/` — offline pytest suite: the markdown formatter's guarantees, and a structural
+  check of every stored notebook (no error outputs, execution counts in order, no
+  machine paths).
 - `tools/` — repo maintenance scripts: `wrap_notebook_markdown.py`, the
   notebook-markdown formatter the pre-commit hook runs.
-- `.github/workflows/notebooks.yml` — CI that executes the `basics/` and `ml/` notebooks
-  on every push to `main`; `gen_ai/` is excluded because it needs Ollama.
+- `.github/workflows/notebooks.yml` — CI that lints with ruff, runs the `tests/` suite
+  and executes the `basics/` and `ml/` notebooks on every push to `main`.
+- `.github/workflows/genai-notebooks.yml` — CI that installs Ollama on the runner and
+  executes `src/setup/` and the `gen_ai/` notebooks on the local models, weekly and on
+  pushes that touch them.
 - `roadmap/` — the master roadmap summary (`roadmap.md`) and the build-out plan
   (`plan.md`).
 - `README.md` — audience, motivation, and setup for readers of the repo.
