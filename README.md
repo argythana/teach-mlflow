@@ -59,11 +59,15 @@ serving).
 
 **Dataset.** The `ml/` notebooks from `b_` to `h_`, and the `j_` capstone, use the
 California housing dataset, derived from the 1990 U.S. census (`i_system_metrics`
-generates synthetic data with `make_regression`). The dataset comes from the
-[StatLib repository](https://www.dcc.fc.up.pt/~ltorgo/Regression/cal_housing.html) and
-is described in Pace and Barry (1997), "Sparse Spatial Autoregressions", *Statistics &
-Probability Letters* 33: 291–297. The notebooks load it with
-`sklearn.datasets.fetch_california_housing`, which downloads it on first use.
+generates synthetic data with `make_regression`). It was originally published on the
+StatLib repository and is described in Pace and Barry (1997), "Sparse Spatial
+Autoregressions", *Statistics & Probability Letters* 33: 291–297. The notebooks load it
+with
+[`sklearn.datasets.fetch_california_housing`](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.fetch_california_housing.html),
+which downloads it on first use. Neither StatLib nor scikit-learn publishes a licence
+for it. `basics/b_tracking_quickstart` and `ml/a_model_logging` use the iris dataset
+(Fisher, 1936), which ships with scikit-learn as `sklearn.datasets.load_iris`; the UCI
+Machine Learning Repository distributes it under CC BY 4.0.
 
 **`gen_ai/` — GenAI / LLM track** (local server on port `5001`, plus a local
 [Ollama](https://ollama.com) model): tracing, LLM-as-judge evaluation, the prompt
@@ -175,9 +179,10 @@ stronger hosted model gives better answers and a more reliable judge. The notebo
 the swap as an optional step: `a_tracing_quickstart` has an OpenAI swap and an Azure
 OpenAI section, `c_genai_evaluation` an optional hosted-judge cell, and
 `d_langchain_agent`, `h_dspy_optimization` and `i_rag_capstone` a commented-out Azure
-configuration. Each is skipped or inert unless you set the credentials. For Azure, put
-them in a `.env` file at the repo root — `.env` is gitignored, and the notebooks load it
-with `python-dotenv`:
+configuration. Each is skipped or inert unless you set the credentials.
+`i_rag_capstone`'s Azure configuration also needs the optional LlamaIndex Azure
+packages: `uv sync --group azure`. For Azure, put the credentials in a `.env` file at
+the repo root — `.env` is gitignored, and the notebooks load it with `python-dotenv`:
 
 ```bash
 # .env at the repo root (gitignored; never commit real values)

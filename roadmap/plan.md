@@ -49,15 +49,15 @@ they now live in `src/basics/`.
 
 Built one at a time against a local Ollama model, in this sequence:
 
-| #   | Notebook                               | Teaches                                                                                                                                                                                                                                                                                                     | Parallels (ml)        |
-| --- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| a   | `a_tracing_quickstart` ✅ drafted      | The Traces tab lights up. Ollama prereq + `mlflow.openai.autolog()` against Ollama's OpenAI-compatible endpoint + a manual `@mlflow.trace`. Spans = inputs/outputs/latency.                                                                                                                                 | the basics quickstart |
-| b   | `b_tracing_a_multistep_app` ✅ drafted | Hand-built RAG (no framework): a traced `RETRIEVER` span + `CHAIN` root + autologged `LLM` span; the failure-diagnosis payoff. Notes framework autolog as the one-line alternative.                                                                                                                         | —                     |
-| c   | `c_genai_evaluation` ✅ drafted        | `mlflow.genai.evaluate()` with built-in judges (RelevanceToQuery, Guidelines, Correctness) + a custom `@scorer` + a `predict_fn` app. **Judge = local `ollama:/gemma3:4b`** via MLflow's native ollama provider (`temperature=0`, serial eval); a hosted Azure/OpenAI judge is an optional swap at the end. | `e_model_evaluation`  |
-| d   | `d_langchain_agent` ✅ drafted         | Tool-using LangChain agent (`langchain.agents.create_agent`, langchain v1) on Ollama, traced by one-line `mlflow.langchain.autolog()` — the framework alternative to `b_`'s manual spans. Runs on `qwen3:1.7b`, the one notebook that needs a tool-calling model.                                           | —                     |
-| e   | `e_prompt_registry` ✅ drafted         | `register_prompt` (auto-versions), `{{var}}` templates, `set_prompt_alias`, `load_prompt("prompts:/name@alias")`; compares v1 vs v2 by running each through Ollama and scoring with the `c_` local judge, then promotes the winner.                                                                         | `f_model_registry`    |
-| f   | `f_genai_app_serving` ✅ drafted       | models-from-code pyfunc (loads `qa-answer@production` per request) → `mlflow models serve -p 5002 --env-manager local` (needs `MLFLOW_TRACKING_URI` for the registry) → curl `/invocations`. Notes the `d_` agent serves the same way via `mlflow.langchain.log_model`.                                     | `g_model_serving`     |
-| g   | `g_feedback_and_monitoring` ✅ drafted | `log_feedback` (HUMAN + CODE source) on traces (needs `flush_trace_async_logging`), read back via `get_trace`; monitoring = `search_traces` + `mlflow.genai.evaluate(data=traces, scorers=[judge])`. Flags Review App / labeling / scheduled scorers as Databricks-managed.                                 | —                     |
+| #   | Notebook                           | Teaches                                                                                                                                                                                                                                                                                                     | Parallels (ml)        |
+| --- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| a   | `a_tracing_quickstart` ✅ run      | The Traces tab lights up. Ollama prereq + `mlflow.openai.autolog()` against Ollama's OpenAI-compatible endpoint + a manual `@mlflow.trace`. Spans = inputs/outputs/latency.                                                                                                                                 | the basics quickstart |
+| b   | `b_tracing_a_multistep_app` ✅ run | Hand-built RAG (no framework): a traced `RETRIEVER` span + `CHAIN` root + autologged `LLM` span; the failure-diagnosis payoff. Notes framework autolog as the one-line alternative.                                                                                                                         | —                     |
+| c   | `c_genai_evaluation` ✅ run        | `mlflow.genai.evaluate()` with built-in judges (RelevanceToQuery, Guidelines, Correctness) + a custom `@scorer` + a `predict_fn` app. **Judge = local `ollama:/gemma3:4b`** via MLflow's native ollama provider (`temperature=0`, serial eval); a hosted Azure/OpenAI judge is an optional swap at the end. | `e_model_evaluation`  |
+| d   | `d_langchain_agent` ✅ run         | Tool-using LangChain agent (`langchain.agents.create_agent`, langchain v1) on Ollama, traced by one-line `mlflow.langchain.autolog()` — the framework alternative to `b_`'s manual spans. Runs on `qwen3:1.7b`, the one notebook that needs a tool-calling model.                                           | —                     |
+| e   | `e_prompt_registry` ✅ run         | `register_prompt` (auto-versions), `{{var}}` templates, `set_prompt_alias`, `load_prompt("prompts:/name@alias")`; compares v1 vs v2 by running each through Ollama and scoring with the `c_` local judge, then promotes the winner.                                                                         | `f_model_registry`    |
+| f   | `f_genai_app_serving` ✅ run       | models-from-code pyfunc (loads `qa-answer@production` per request) → `mlflow models serve -p 5002 --env-manager local` (needs `MLFLOW_TRACKING_URI` for the registry) → curl `/invocations`. Notes the `d_` agent serves the same way via `mlflow.langchain.log_model`.                                     | `g_model_serving`     |
+| g   | `g_feedback_and_monitoring` ✅ run | `log_feedback` (HUMAN + CODE source) on traces (needs `flush_trace_async_logging`), read back via `get_trace`; monitoring = `search_traces` + `mlflow.genai.evaluate(data=traces, scorers=[judge])`. Flags Review App / labeling / scheduled scorers as Databricks-managed.                                 | —                     |
 
 **Advanced notebooks (built):**
 
@@ -85,8 +85,7 @@ dependency.
 
 ## Build order
 
-`a_` → … → `i_` are built and contiguous — the GenAI track is **feature-complete
-(drafts)**: every notebook is written and runs end to end on local Ollama.
-`i_rag_capstone` is the realistic finale. Remaining: a possible future `databricks/`
-track for managed-only features (Review App, labeling, scheduled scorers) — see
-roadmap.md.
+`a_` → … → `i_` are built and contiguous — the GenAI track is **feature-complete**:
+every notebook is written and runs end to end on local Ollama. `i_rag_capstone` is the
+realistic finale. Remaining: a possible future `databricks/` track for managed-only
+features (Review App, labeling, scheduled scorers) — see roadmap.md.

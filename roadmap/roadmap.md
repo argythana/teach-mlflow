@@ -12,7 +12,8 @@ for reading order:
 
 - **`src/basics/`** — track-agnostic foundations both tracks build on.
 - **`src/ml/`** — the traditional-ML track (complete).
-- **`src/gen_ai/`** — the GenAI / LLM track: feature-complete (drafts); see `plan.md`.
+- **`src/gen_ai/`** — the GenAI / LLM track: feature-complete, every notebook run on the
+  local models; see `plan.md`.
 
 ## `basics/` — shared foundations (port 5000)
 
@@ -43,7 +44,7 @@ topics and a capstone that threads them together. Spine dataset: California hous
 is the lesson (`i_system_metrics`). Aliases, not deprecated stage transitions,
 throughout.
 
-## `gen_ai/` — GenAI / LLM track ✅ feature-complete (drafts, port 5001 shared with `ml/`)
+## `gen_ai/` — GenAI / LLM track ✅ feature-complete (port 5001 shared with `ml/`)
 
 **LLM backend (decided): fully local-default, hosted optional.** The whole track runs on
 a **local Ollama** model (zero cost, no API key — fits the "students with no budget"
