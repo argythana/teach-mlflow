@@ -7,8 +7,8 @@ is the scannable overview. The build-out plan for the GenAI track is in
 
 ## Repository structure
 
-Notebooks are grouped by track under `src/`, each folder lettered `a_`, `b_`, … for
-reading order:
+Notebooks are grouped by track under `src/`, each notebook file lettered `a_`, `b_`, …
+for reading order:
 
 - **`src/basics/`** — track-agnostic foundations both tracks build on.
 - **`src/ml/`** — the traditional-ML track (complete).

@@ -12,22 +12,22 @@ Most ML courses, meanwhile, teach algorithms and their metrics as standalone top
 skip the reproducibility, observability, and monitoring that scientific research and
 production ML systems depend on.
 
-MLflow is not taught at any Computer Science university in Greece, even though it is
+In Greece, Computer Science university courses rarely teach MLflow, even though it is
 essential for data scientists. The goal of this repo is to provide beginner-friendly,
 up-to-date learning resources that help fill that gap.
 
 ## The tutorials
 
-Notebooks are grouped by track. Each folder is prefixed `a_`, `b_`, `c_`, … so the
-intended reading order is obvious from `ls`. Each one stays close to the official MLflow
-material but adds the prerequisites, terminology, and "why this feature exists" context
-the upstream docs assume or skip.
+Notebooks are grouped by track. Within each track folder, the notebook files are
+prefixed `a_`, `b_`, `c_`, … so the intended reading order is obvious from `ls`. Each
+notebook stays close to the official MLflow material but adds the prerequisites,
+terminology, and "why this feature exists" context the upstream docs assume or skip.
 
 **`basics/` — shared foundations** (local server on port `5000`), the starting point for
 either track:
 
-- `a_setup_mlflow` — what MLflow solves; `mlflow ui` vs `mlflow server`; connecting a
-  notebook to a tracking server.
+- `a_setup_mlflow` — what MLflow solves; the `ui` vs `server` subcommands for starting
+  MLflow; connecting a notebook to a tracking server.
 - `b_tracking_quickstart` — log a model, parameters, and metrics; the three stores
   (backend / artifact / registry); loading a model back as a `pyfunc`.
 
@@ -56,6 +56,14 @@ either track:
 
 Together these form the traditional-ML MLOps spine (tracking → evaluation → registry →
 serving).
+
+**Dataset.** The `ml/` notebooks from `b_` to `h_`, and the `j_` capstone, use the
+California housing dataset, derived from the 1990 U.S. census (`i_system_metrics`
+generates synthetic data with `make_regression`). The dataset comes from the
+[StatLib repository](https://www.dcc.fc.up.pt/~ltorgo/Regression/cal_housing.html) and
+is described in Pace and Barry (1997), "Sparse Spatial Autoregressions", *Statistics &
+Probability Letters* 33: 291–297. The notebooks load it with
+`sklearn.datasets.fetch_california_housing`, which downloads it on first use.
 
 **`gen_ai/` — GenAI / LLM track** (local server on port `5001`, plus a local
 [Ollama](https://ollama.com) model): tracing, LLM-as-judge evaluation, the prompt
@@ -88,27 +96,6 @@ optional step. See [GenAI track prerequisites](#genai-track-prerequisites).
 
 See `roadmap/` for the design decisions behind each track and what is planned next.
 
-## Start the MLflow tracking server first
-
-Every notebook assumes a local MLflow tracking server is already running. **Before
-opening a notebook**, start it in a separate terminal from the `src/` folder, on the
-port that notebook expects — the `basics/` notebooks use `5000`; the `ml/` and `gen_ai/`
-tracks use `5001`:
-
-```bash
-cd src/
-mlflow ui --host 127.0.0.1 --port 5000   # use 5001 for the ml/ and gen_ai/ tracks
-```
-
-Leave it running and open the UI at the matching address (e.g. <http://127.0.0.1:5000>).
-In MLflow 3 this creates a `mlflow.db` (the SQLite backend store) and an `mlartifacts/`
-directory in the folder you started the server from. Start it from `src/` every time so
-they stay in one place, next to the notebooks; the notebooks' on-disk examples assume
-that layout. Both are per-developer runtime state and are gitignored.
-
-If a notebook cell calls `mlflow.set_tracking_uri("http://127.0.0.1:<port>")` while no
-server is listening on that port, the logging calls will fail.
-
 ## Setup
 
 Requires Python **3.14** and [`uv`](https://docs.astral.sh/uv/) for dependency
@@ -119,6 +106,44 @@ uv sync          # creates .venv/ and installs locked dependencies
 ```
 
 `direnv` auto-activates the venv via `.envrc`; otherwise `source .venv/bin/activate`.
+
+## Start the MLflow tracking server first
+
+The `basics/`, `ml/`, and `gen_ai/` notebooks assume a local MLflow tracking server is
+already running; the Ollama setup notebook in `src/setup/` does not need one. **Before
+opening a tutorial notebook**, start it in a separate terminal from the `src/` folder,
+on the port that notebook expects — the `basics/` notebooks use `5000`; the `ml/` and
+`gen_ai/` tracks use `5001`:
+
+```bash
+cd src/
+mlflow ui --host 127.0.0.1 --port 5000   # use 5001 for the ml/ and gen_ai/ tracks
+```
+
+The `mlflow` command comes from the venv that `uv sync` created, so activate it in the
+new terminal first, or run `uv run mlflow ui …` instead.
+
+Leave it running and open the UI at the matching address (e.g. <http://127.0.0.1:5000>).
+In MLflow 3 this creates a `mlflow.db` (the SQLite backend store) and an `mlartifacts/`
+directory in the folder you started the server from. Start it from `src/` every time so
+they stay in one place, next to the notebooks; the notebooks' on-disk examples assume
+that layout. Both are per-developer runtime state and are gitignored.
+
+If a notebook cell calls `mlflow.set_tracking_uri("http://127.0.0.1:<port>")` while no
+server is listening on that port, the logging calls will fail.
+
+## Open the notebooks
+
+With the server running, start JupyterLab from the uv environment in another terminal,
+at the repo root:
+
+```bash
+uv run jupyter lab
+```
+
+Then open a notebook under `src/`, starting with `src/basics/a_setup_mlflow.ipynb`.
+JupyterLab runs each notebook with that notebook's own folder as the working directory,
+which is what the notebooks expect.
 
 ## GenAI track prerequisites
 
