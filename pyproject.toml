@@ -40,24 +40,68 @@ azure = [
 dev = [
     "mdformat>=1.0.0",
     "mdformat-gfm>=1.0.0",
+    "mypy>=2.4.0",
     "prek>=0.5.3",
     "pytest>=9.1.1",
     "ruff>=0.16.7",
 ]
 
 [tool.ruff]
-# `ruff check src/` lints the notebooks: ruff includes *.ipynb files by default,
-# and infers the target Python version from requires-python. The pre-commit hooks in
-# .pre-commit-config.yaml run `ruff format` and `ruff check --fix` on notebook code cells.
+# `ruff check .` and `ruff format --check .` cover the notebooks in src/ (ruff
+# includes *.ipynb files by default) and the Python in tools/ and tests/. ruff infers
+# the target Python version from requires-python. The pre-commit hooks in
+# .pre-commit-config.yaml run `ruff format` and `ruff check --fix` on both.
 line-length = 88
 
 [tool.ruff.lint]
-# ruff's default rule set, spelled out so readers can see what is checked:
-# pycodestyle errors that do not conflict with a formatter (E4, E7, E9) and pyflakes (F).
-select = ["E4", "E7", "E9", "F"]
+# ruff's default rule set: pycodestyle errors that do not conflict with a formatter
+# (E4, E7, E9) and pyflakes (F); plus bugbear (B), comprehensions (C4), import order
+# (I), pep8-naming (N), misc lints (PIE), pytest style (PT), pathlib (PTH), return
+# statements (RET), ruff's own rules (RUF), simplifications (SIM) and pyupgrade (UP).
+select = [
+    "E4",
+    "E7",
+    "E9",
+    "F",
+    "B",
+    "C4",
+    "I",
+    "N",
+    "PIE",
+    "PT",
+    "PTH",
+    "RET",
+    "RUF",
+    "SIM",
+    "UP",
+]
 
 [tool.ruff.lint.per-file-ignores]
-# E402 (module-level import not at top of cell): a teaching notebook may import a
-# module next to the code that teaches it, or set a warnings filter before the
-# imports whose warnings it silences (ml/h_dataset_logging, ml/j_capstone_end_to_end).
-"*.ipynb" = ["E402"]
+# Teaching notebooks favour the order a reader meets things over tool conventions:
+# - E402, I001: a notebook may import a module next to the code that teaches it, or
+#   set a warnings filter before the imports whose warnings it silences
+#   (ml/h_dataset_logging, ml/j_capstone_end_to_end);
+# - B905: zip() without strict= keeps the examples short;
+# - PTH: notebooks use open() and os.path where readers expect them;
+# - RUF001, RUF005, RUF007: typographic characters in printed prose, list
+#   concatenation and zip(x, x[1:]) are written the way a beginner reads them.
+"*.ipynb" = ["E402", "I001", "B905", "PTH", "RUF001", "RUF005", "RUF007"]
+
+[tool.mypy]
+# Type-checks the Python outside the notebooks: `mypy` with no arguments checks
+# `files`. Strict mode, plus the optional error codes that catch dead or
+# redundant code. The notebooks in src/ are teaching material and are not checked.
+files = ["tools", "tests"]
+strict = true
+warn_unreachable = true
+enable_error_code = [
+    "deprecated",
+    "explicit-override",
+    "ignore-without-code",
+    "possibly-undefined",
+    "redundant-expr",
+    "redundant-self",
+    "truthy-bool",
+    "truthy-iterable",
+    "unused-awaitable",
+]

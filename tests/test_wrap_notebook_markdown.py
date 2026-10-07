@@ -14,8 +14,12 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
+
+# Parsed notebook JSON: a whole notebook, or one cell or output inside it.
+type JSONObject = dict[str, Any]
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TOOL = REPO_ROOT / "tools" / "wrap_notebook_markdown.py"
@@ -73,7 +77,7 @@ def _lines(text: str) -> list[str]:
     return text.splitlines(keepends=True)
 
 
-def _markdown_cell(cell_id: str, source: str) -> dict:
+def _markdown_cell(cell_id: str, source: str) -> JSONObject:
     return {
         "cell_type": "markdown",
         "id": cell_id,
@@ -82,7 +86,7 @@ def _markdown_cell(cell_id: str, source: str) -> dict:
     }
 
 
-def _code_cell(count: int, source: str, outputs: list[dict]) -> dict:
+def _code_cell(count: int, source: str, outputs: list[JSONObject]) -> JSONObject:
     return {
         "cell_type": "code",
         "execution_count": count,
@@ -93,7 +97,7 @@ def _code_cell(count: int, source: str, outputs: list[dict]) -> dict:
     }
 
 
-def _fixture_notebook() -> dict:
+def _fixture_notebook() -> JSONObject:
     # Code sources and outputs carry long prose with clause marks, so a
     # formatter that touched them would visibly rewrap them.
     stream = {
@@ -158,7 +162,7 @@ def _fixture_notebook() -> dict:
     }
 
 
-def _dump(nb: dict) -> str:
+def _dump(nb: JSONObject) -> str:
     """Serialize a notebook the way Jupyter and the formatter both write it."""
     return json.dumps(nb, ensure_ascii=False, indent=1) + "\n"
 
@@ -174,7 +178,7 @@ def _run_formatter(
     )
 
 
-def _markdown_sources(nb: dict) -> dict[str, str]:
+def _markdown_sources(nb: JSONObject) -> dict[str, str]:
     return {
         c["id"]: "".join(c["source"])
         for c in nb["cells"]
@@ -184,7 +188,8 @@ def _markdown_sources(nb: dict) -> dict[str, str]:
 
 def _body_lines(source: str) -> list[str]:
     """The lines of a justified cell's source, without its <div> wrapper."""
-    assert source.startswith(JUSTIFY_OPEN + "\n\n") and source.endswith("\n\n</div>")
+    assert source.startswith(JUSTIFY_OPEN + "\n\n")
+    assert source.endswith("\n\n</div>")
     return source[len(JUSTIFY_OPEN) : -len("</div>")].strip("\n").split("\n")
 
 
@@ -196,7 +201,7 @@ def notebook(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def formatted(notebook: Path) -> tuple[dict, dict]:
+def formatted(notebook: Path) -> tuple[JSONObject, JSONObject]:
     """The fixture notebook before and after one run of the hook."""
     before = json.loads(notebook.read_text(encoding="utf-8"))
     proc = _run_formatter(notebook)
@@ -231,7 +236,7 @@ def test_exit_status_reports_whether_a_file_changed(notebook: Path) -> None:
 
 
 def test_code_cells_and_outputs_are_byte_identical(
-    formatted: tuple[dict, dict],
+    formatted: tuple[JSONObject, JSONObject],
 ) -> None:
     before, after = formatted
     code_before = [c for c in before["cells"] if c["cell_type"] == "code"]
@@ -263,7 +268,7 @@ def test_only_markdown_sources_change(notebook: Path) -> None:
 
 @pytest.mark.parametrize("cell_id", NO_BREAK_INSIDE)
 def test_breaks_only_at_the_first_valid_mark_after_the_width(
-    formatted: tuple[dict, dict], cell_id: str
+    formatted: tuple[JSONObject, JSONObject], cell_id: str
 ) -> None:
     """Never inside code spans or links, after skipped abbreviations, or at a mark
     with no whitespace after it (decimals, model tags)."""
@@ -282,7 +287,7 @@ def test_breaks_only_at_the_first_valid_mark_after_the_width(
 
 
 def test_leaves_headings_quotes_tables_fences_and_rules_untouched(
-    formatted: tuple[dict, dict],
+    formatted: tuple[JSONObject, JSONObject],
 ) -> None:
     _, after = formatted
     lines = _body_lines(_markdown_sources(after)["blocks"])
@@ -290,7 +295,9 @@ def test_leaves_headings_quotes_tables_fences_and_rules_untouched(
     assert [line for line in lines if line] == UNTOUCHED_LINES
 
 
-def test_list_items_wrap_with_a_hanging_indent(formatted: tuple[dict, dict]) -> None:
+def test_list_items_wrap_with_a_hanging_indent(
+    formatted: tuple[JSONObject, JSONObject],
+) -> None:
     _, after = formatted
     lines = _body_lines(_markdown_sources(after)["list"])
 

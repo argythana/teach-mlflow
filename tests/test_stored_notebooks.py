@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -25,7 +26,7 @@ NOTEBOOKS = sorted(
 MACHINE_PATH = re.compile(r"(~|/home/[^/\s]+)/")
 
 
-def _code_cells(path: Path) -> list[dict]:
+def _code_cells(path: Path) -> list[dict[str, Any]]:
     nb = json.loads(path.read_text(encoding="utf-8"))
     return [cell for cell in nb["cells"] if cell["cell_type"] == "code"]
 

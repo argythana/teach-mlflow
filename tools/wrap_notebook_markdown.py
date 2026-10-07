@@ -30,6 +30,8 @@ import argparse
 import json
 import re
 import sys
+from pathlib import Path
+from typing import Any
 
 BOUNDARY_CHARS = ".?;:—"  # sentence + strong-clause enders (no commas)
 _BOUNDARY = re.compile(rf"[{re.escape(BOUNDARY_CHARS)}](?=\s)")
@@ -40,8 +42,21 @@ _FENCE = re.compile(r"^\s*(```|~~~)")
 _HR = re.compile(r"^\s*([-*_])(\s*\1){2,}\s*$")
 _LEAVE_PREFIX = ("#", ">", "|", "<")
 ABBREV = {
-    "e.g.", "i.e.", "etc.", "vs.", "cf.", "al.", "approx.",
-    "dr.", "mr.", "mrs.", "ms.", "no.", "fig.", "eq.", "st.",
+    "e.g.",
+    "i.e.",
+    "etc.",
+    "vs.",
+    "cf.",
+    "al.",
+    "approx.",
+    "dr.",
+    "mr.",
+    "mrs.",
+    "ms.",
+    "no.",
+    "fig.",
+    "eq.",
+    "st.",
 }
 
 
@@ -107,8 +122,11 @@ def semantic_wrap(text: str, width: int) -> str:
             segs.append(c)
             continue
         cprot = _protected(c)
-        cuts = [m.start() + 1 for m in re.finditer(r",(?=\s)", c)
-                if not any(a <= m.start() < b for a, b in cprot)]
+        cuts = [
+            m.start() + 1
+            for m in re.finditer(r",(?=\s)", c)
+            if not any(a <= m.start() < b for a, b in cprot)
+        ]
         prev = 0
         for cut in [*cuts, len(c)]:
             piece = c[prev:cut].strip()
@@ -130,7 +148,8 @@ def semantic_wrap(text: str, width: int) -> str:
             cur = ""
     if cur:
         lines.append(cur)
-    return "\n".join(lines)  # soft breaks: source wraps, the render re-flows + justifies
+    # Soft breaks: the source wraps, the render re-flows and justifies.
+    return "\n".join(lines)
 
 
 def process_source(src: str, width: int) -> str:
@@ -178,7 +197,12 @@ def process_source(src: str, width: int) -> str:
         while j < len(lines):
             ln = lines[j]
             ns = ln.strip()
-            if ns == "" or ns.startswith(_LEAVE_PREFIX) or _FENCE.match(ln) or _LIST.match(ln):
+            if (
+                ns == ""
+                or ns.startswith(_LEAVE_PREFIX)
+                or _FENCE.match(ln)
+                or _LIST.match(ln)
+            ):
                 break
             para.append(_unbreak(ns))
             j += 1
@@ -187,9 +211,10 @@ def process_source(src: str, width: int) -> str:
     return "\n".join(out)
 
 
-def process_notebook(path: str, width: int, justify: bool = False) -> bool:
-    with open(path, encoding="utf-8") as fh:
-        nb = json.load(fh)
+def process_notebook(path: str, width: int, *, justify: bool = False) -> bool:
+    nb_path = Path(path)
+    with nb_path.open(encoding="utf-8") as fh:
+        nb: dict[str, Any] = json.load(fh)
     changed = False
     for cell in nb.get("cells", []):
         if cell.get("cell_type") != "markdown":
@@ -199,12 +224,12 @@ def process_notebook(path: str, width: int, justify: bool = False) -> bool:
         if justify:
             new = f"{_JUSTIFY_OPEN}\n\n{new}\n\n</div>"
         if new != src:
-            cell["source"] = [l + "\n" for l in new.split("\n")]
+            cell["source"] = [line + "\n" for line in new.split("\n")]
             if cell["source"]:
                 cell["source"][-1] = cell["source"][-1].rstrip("\n")
             changed = True
     if changed:
-        with open(path, "w", encoding="utf-8") as fh:
+        with nb_path.open("w", encoding="utf-8") as fh:
             json.dump(nb, fh, ensure_ascii=False, indent=1)
             fh.write("\n")
     return changed
@@ -213,13 +238,20 @@ def process_notebook(path: str, width: int, justify: bool = False) -> bool:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--width", type=int, default=90)
-    ap.add_argument("--justify", action="store_true",
-                    help="wrap each markdown cell in a <div style='text-align: justify'>")
+    ap.add_argument(
+        "--justify",
+        action="store_true",
+        help="wrap each markdown cell in a <div style='text-align: justify'>",
+    )
     ap.add_argument("files", nargs="+")
     args = ap.parse_args()
+    # argparse attributes are untyped; name them with the types the parser gives.
+    width: int = args.width
+    justify: bool = args.justify
+    files: list[str] = args.files
     any_changed = False
-    for f in args.files:
-        if f.endswith(".ipynb") and process_notebook(f, args.width, args.justify):
+    for f in files:
+        if f.endswith(".ipynb") and process_notebook(f, width, justify=justify):
             print(f"reformatted {f}")
             any_changed = True
     return 1 if any_changed else 0
