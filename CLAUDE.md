@@ -70,7 +70,9 @@ editorial principles. The `mlflow-tutorial-improve` skill at
 - Python **3.14** (`pyproject.toml` pins `requires-python = ">=3.14"`).
 - A local venv lives at `.venv/`. **direnv** activates it via `.envrc`
   (`source ./.venv/bin/activate`); if direnv is not loaded, activate manually with
-  `source .venv/bin/activate`.
+  `source .venv/bin/activate`. The tracked `.envrc` only activates the venv;
+  machine-specific settings go in the gitignored `.envrc.local`, which it sources if
+  present.
 - **Dependency management uses `uv` exclusively. Do not use `pip`** — do not bootstrap
   it with `ensurepip`, do not seed the venv with `uv venv --seed`, do not run
   `pip install` or `uv pip install`. All package changes go through the uv project

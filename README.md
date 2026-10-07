@@ -110,7 +110,10 @@ management.
 uv sync          # creates .venv/ and installs locked dependencies
 ```
 
-`direnv` auto-activates the venv via `.envrc`; otherwise `source .venv/bin/activate`.
+If you use [`direnv`](https://direnv.net), run `direnv allow` once at the repo root and
+it activates the venv whenever you enter the folder (`.envrc`); put any personal
+additions in an untracked `.envrc.local`, which `.envrc` loads if it exists. Otherwise,
+activate the venv by hand with `source .venv/bin/activate`.
 
 ## Start the MLflow tracking server first
 
@@ -167,6 +170,21 @@ ollama pull gemma3:4b         # the default: generation and the LLM-as-judge, ev
 ollama pull qwen3:1.7b        # d_langchain_agent only: it needs a model that can call tools
 ollama pull nomic-embed-text  # i_rag_capstone only: the embedding model for the RAG index
 ```
+
+**Tested with Ollama 0.34.0**, the version the GenAI workflow pins in CI. Newer releases
+should work; on Linux,
+`curl -fsSL https://ollama.com/install.sh | OLLAMA_VERSION=0.34.0 sh` installs exactly
+that one. Model tags such as `gemma3:4b` are mutable: the publisher can point a tag at a
+new build, and a later pull then fetches different weights. The ID that `ollama list`
+prints identifies the build; the notebooks' stored outputs came from these:
+
+| Model                     | ID             |
+| ------------------------- | -------------- |
+| `gemma3:4b`               | `a2af6cc3eb7f` |
+| `qwen3:1.7b`              | `8f68893c685c` |
+| `nomic-embed-text:latest` | `0a109f422b47` |
+
+If your IDs differ, answers and judge scores can differ slightly from the stored ones.
 
 Ollama serves on `http://localhost:11434`; the notebooks reach it through the `openai`
 client (no API key). It normally runs in the background after install — if a notebook

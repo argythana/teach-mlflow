@@ -78,10 +78,10 @@ define GenAI jargon once (span, trace, scorer, judge, prompt version), cross-lin
 (`langchain`/`langchain-openai`/`langgraph`) for `d_`, `dspy` (brings `litellm`) for
 `h_`, and for `i_` the LlamaIndex packages (`llama-index-core`,
 `llama-index-vector-stores-milvus`, `llama-index-embeddings-ollama`,
-`llama-index-llms-ollama`, and for the optional hosted swap
-`llama-index-embeddings-azure-openai`, `llama-index-llms-azure-openai`) plus `pymilvus`,
-which bundles Milvus Lite. **Ollama is a documented system prerequisite**, not a Python
-dependency.
+`llama-index-llms-ollama`) plus `pymilvus`, which bundles Milvus Lite. The optional
+hosted swap's `llama-index-embeddings-azure-openai` and `llama-index-llms-azure-openai`
+sit in a separate `azure` dependency group (`uv sync --group azure`). **Ollama is a
+documented system prerequisite**, not a Python dependency.
 
 ## Build order
 

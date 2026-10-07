@@ -32,8 +32,9 @@
 # reader runs it, in reading order: setup first, then gen_ai a_ to i_. The
 # tracking server runs from $RUNNER_TEMP, so its mlflow.db and mlartifacts/ stay
 # out of the checkout. Executed copies are written to $RUNNER_TEMP too; the
-# tracked notebooks are never overwritten. f_ and i_ write the gitignored files
-# src/gen_ai/_genai_app.py and src/gen_ai/milvus_rag.db, as they do for a reader.
+# tracked notebooks are never overwritten. f_ writes the gitignored file
+# src/gen_ai/_genai_app.py, and i_ writes src/gen_ai/_rag_app.py and
+# src/gen_ai/milvus_rag.db, as they do for a reader.
 #
 # Timing: GitHub-hosted runners have no GPU, so every model call runs on 4 CPU
 # cores, one at a time (the notebooks run judges serially). Expect roughly
@@ -184,7 +185,7 @@ jobs:
           key: ${{ steps.models.outputs.key }}
 
       # Load both chat models into memory once, so the first call in a
-      # notebook does not spend its client timeout (60 s in most notebooks)
+      # notebook does not spend its client timeout (300 s for model calls)
       # loading weights from disk.
       - name: Warm up the chat models
         run: |

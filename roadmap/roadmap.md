@@ -63,8 +63,8 @@ notebook that benefits. This now includes the parts that used to need a hosted m
 Ollama is a documented *system prerequisite*, like the tracking server — not a pip
 dependency. Added Python deps: `openai`, the LangChain v1 stack (`d_`), `dspy` (`h_`),
 and the LlamaIndex + Milvus stack incl. `llama-index-embeddings-ollama` /
-`llama-index-llms-ollama` (`i_`). `huggingface_hub[cli]` is a dev dep for browsing GGUF
-models.
+`llama-index-llms-ollama` (`i_`). The LlamaIndex Azure packages for `i_`'s optional
+hosted swap sit in a separate `azure` dependency group (`uv sync --group azure`).
 
 **Default model:** `gemma3:4b` (~3 GB; fits a small GPU, or runs on CPU) — small, fast,
 and *non-reasoning*, so it answers directly: no `/no_think` needed, and none of qwen3's
