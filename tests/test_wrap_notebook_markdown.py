@@ -184,7 +184,8 @@ def _markdown_sources(nb: dict) -> dict[str, str]:
 
 def _body_lines(source: str) -> list[str]:
     """The lines of a justified cell's source, without its <div> wrapper."""
-    assert source.startswith(JUSTIFY_OPEN + "\n\n") and source.endswith("\n\n</div>")
+    assert source.startswith(JUSTIFY_OPEN + "\n\n")
+    assert source.endswith("\n\n</div>")
     return source[len(JUSTIFY_OPEN) : -len("</div>")].strip("\n").split("\n")
 
 
