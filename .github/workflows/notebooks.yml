@@ -2,8 +2,10 @@
 # push to main proves the offline half of the course still runs. Any cell error
 # fails the job. The workflow uses no credentials of any kind.
 #
-# A separate lint job runs `ruff check src/` with the ruff version pinned in
-# uv.lock and the rules in pyproject.toml; ruff lints the notebooks' code cells.
+# A separate lint job runs `ruff check .` and `ruff format --check .` at the
+# repo root, with the ruff version pinned in uv.lock and the rules in
+# pyproject.toml: it lints and format-checks the notebooks' code cells in src/
+# and the Python files in tools/ and tests/.
 #
 # A separate test job runs pytest on tests/, offline and with no models or
 # servers. It tests tools/wrap_notebook_markdown.py, the pre-commit formatter
@@ -83,9 +85,14 @@ jobs:
           enable-cache: true
 
       # --only-dev installs just the dev group (ruff) from uv.lock, not the
-      # course's runtime dependencies.
-      - name: Run ruff check src/
-        run: uv run --locked --only-dev ruff check src/
+      # course's runtime dependencies. At the repo root ruff covers the
+      # notebooks in src/ and the Python files in tools/ and tests/.
+      - name: Run ruff check
+        run: uv run --locked --only-dev ruff check .
+
+      - name: Run ruff format --check
+        if: ${{ !cancelled() }}
+        run: uv run --locked --only-dev ruff format --check .
 
   test:
     name: Test the formatter and stored notebooks
