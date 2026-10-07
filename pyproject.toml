@@ -40,6 +40,7 @@ azure = [
 dev = [
     "mdformat>=1.0.0",
     "mdformat-gfm>=1.0.0",
+    "mypy>=2.4.0",
     "prek>=0.5.3",
     "pytest>=9.1.1",
     "ruff>=0.16.7",
@@ -85,3 +86,22 @@ select = [
 # - RUF001, RUF005, RUF007: typographic characters in printed prose, list
 #   concatenation and zip(x, x[1:]) are written the way a beginner reads them.
 "*.ipynb" = ["E402", "I001", "B905", "PTH", "RUF001", "RUF005", "RUF007"]
+
+[tool.mypy]
+# Type-checks the Python outside the notebooks: `mypy` with no arguments checks
+# `files`. Strict mode, plus the optional error codes that catch dead or
+# redundant code. The notebooks in src/ are teaching material and are not checked.
+files = ["tools", "tests"]
+strict = true
+warn_unreachable = true
+enable_error_code = [
+    "deprecated",
+    "explicit-override",
+    "ignore-without-code",
+    "possibly-undefined",
+    "redundant-expr",
+    "redundant-self",
+    "truthy-bool",
+    "truthy-iterable",
+    "unused-awaitable",
+]

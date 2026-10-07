@@ -10,13 +10,13 @@
 #   SKIP=ruff-format-nb,wrap-notebook-markdown git commit -m "..."   # skip several (comma-separated)
 # Hook ids available to SKIP: check-added-large-files, check-json, check-toml,
 #   check-yaml, check-merge-conflict, end-of-file-fixer, trailing-whitespace,
-#   mdformat, ruff-format-nb, ruff-check-nb, ruff-format-py, ruff-check-py,
+#   mdformat, ruff-format-nb, ruff-check-nb, ruff-format-py, ruff-check-py, mypy,
 #   wrap-notebook-markdown.
 #
 # The repo is almost entirely Jupyter notebooks (code in code cells, prose in
 # markdown cells) plus a few Markdown docs and the Python in tools/ and tests/ —
 # the hooks are scoped accordingly. CI (.github/workflows/notebooks.yml) runs the
-# same ruff checks over the whole repo.
+# same ruff checks over the whole repo, and the same mypy check.
 default_language_version:
   python: "python3"
 default_stages: [pre-commit]
@@ -79,6 +79,15 @@ repos:
         entry: uv run ruff check --fix
         language: system
         files: "\\.py$"
+        require_serial: true
+      # Type-check tools/ and tests/ — mypy reads its file list and strict
+      # settings from pyproject.toml, so it checks the whole set on any change.
+      - id: "mypy"
+        name: "mypy (tools/ and tests/)"
+        entry: uv run mypy
+        language: system
+        files: "^((tools|tests)/.*\\.py|pyproject\\.toml)$"
+        pass_filenames: false
         require_serial: true
 
       # Notebook MARKDOWN cells — wrap prose in the source at the first

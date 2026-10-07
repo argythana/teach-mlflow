@@ -5,7 +5,10 @@
 # A separate lint job runs `ruff check .` and `ruff format --check .` at the
 # repo root, with the ruff version pinned in uv.lock and the rules in
 # pyproject.toml: it lints and format-checks the notebooks' code cells in src/
-# and the Python files in tools/ and tests/.
+# and the Python files in tools/ and tests/. The same job type-checks tools/
+# and tests/ with mypy in strict mode (configured under [tool.mypy] in
+# pyproject.toml, version pinned in uv.lock); the notebooks are not
+# type-checked.
 #
 # A separate test job runs pytest on tests/, offline and with no models or
 # servers. It tests tools/wrap_notebook_markdown.py, the pre-commit formatter
@@ -65,7 +68,7 @@ concurrency:
 
 jobs:
   lint:
-    name: Lint with ruff
+    name: Lint with ruff and type-check with mypy
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -84,7 +87,7 @@ jobs:
         with:
           enable-cache: true
 
-      # --only-dev installs just the dev group (ruff) from uv.lock, not the
+      # --only-dev installs just the dev group (ruff, mypy) from uv.lock, not the
       # course's runtime dependencies. At the repo root ruff covers the
       # notebooks in src/ and the Python files in tools/ and tests/.
       - name: Run ruff check
@@ -93,6 +96,12 @@ jobs:
       - name: Run ruff format --check
         if: ${{ !cancelled() }}
         run: uv run --locked --only-dev ruff format --check .
+
+      # mypy checks the files listed in pyproject.toml (tools/ and tests/);
+      # pytest, which the tests import, is in the same dev group.
+      - name: Run mypy
+        if: ${{ !cancelled() }}
+        run: uv run --locked --only-dev mypy
 
   test:
     name: Test the formatter and stored notebooks
