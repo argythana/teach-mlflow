@@ -84,9 +84,11 @@ editorial principles. The `mlflow-tutorial-improve` skill at
 - **Formatting and linting run as pre-commit hooks through `prek`**
   (`.pre-commit-config.yaml`; wire the git hook once with `uv run prek install`, or run
   `uv run prek run --all-files`): `mdformat --wrap 88` for the Markdown docs,
-  `ruff format` + `ruff check --fix` for notebook code cells, and
+  `ruff format` + `ruff check --fix` for notebook code cells and for the Python files in
+  `tools/` and `tests/`, `mypy` (strict) for `tools/` and `tests/`, and
   `tools/wrap_notebook_markdown.py --width 120 --justify` for notebook markdown cells.
-  Let the hooks wrap prose; don't hand-wrap.
+  The ruff rules live in `pyproject.toml`; notebooks are exempt from a few of them, each
+  with a comment saying why. Let the hooks wrap prose; don't hand-wrap.
 
 ## Running the MLflow tutorials
 
@@ -158,8 +160,9 @@ tracking server.) The `basics/` and `ml/` tracks don't need Ollama.
   machine paths).
 - `tools/` — repo maintenance scripts: `wrap_notebook_markdown.py`, the
   notebook-markdown formatter the pre-commit hook runs.
-- `.github/workflows/notebooks.yml` — CI that lints with ruff, runs the `tests/` suite
-  and executes the `basics/` and `ml/` notebooks on every push to `main`.
+- `.github/workflows/notebooks.yml` — CI that lints and format-checks the repo with
+  ruff, type-checks `tools/` and `tests/` with mypy, runs the `tests/` suite and
+  executes the `basics/` and `ml/` notebooks on every push to `main`.
 - `.github/workflows/genai-notebooks.yml` — CI that installs Ollama on the runner and
   executes `src/setup/` and the `gen_ai/` notebooks on the local models, weekly and on
   pushes that touch them.
