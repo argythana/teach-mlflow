@@ -110,7 +110,10 @@ management.
 uv sync          # creates .venv/ and installs locked dependencies
 ```
 
-`direnv` auto-activates the venv via `.envrc`; otherwise `source .venv/bin/activate`.
+If you use [`direnv`](https://direnv.net), run `direnv allow` once at the repo root and
+it activates the venv whenever you enter the folder (`.envrc`); put any personal
+additions in an untracked `.envrc.local`, which `.envrc` loads if it exists. Otherwise,
+activate the venv by hand with `source .venv/bin/activate`.
 
 ## Start the MLflow tracking server first
 
