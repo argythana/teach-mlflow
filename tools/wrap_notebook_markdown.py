@@ -31,6 +31,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from typing import Any
 
 BOUNDARY_CHARS = ".?;:—"  # sentence + strong-clause enders (no commas)
 _BOUNDARY = re.compile(rf"[{re.escape(BOUNDARY_CHARS)}](?=\s)")
@@ -213,7 +214,7 @@ def process_source(src: str, width: int) -> str:
 def process_notebook(path: str, width: int, *, justify: bool = False) -> bool:
     nb_path = Path(path)
     with nb_path.open(encoding="utf-8") as fh:
-        nb = json.load(fh)
+        nb: dict[str, Any] = json.load(fh)
     changed = False
     for cell in nb.get("cells", []):
         if cell.get("cell_type") != "markdown":
@@ -244,11 +245,13 @@ def main() -> int:
     )
     ap.add_argument("files", nargs="+")
     args = ap.parse_args()
+    # argparse attributes are untyped; name them with the types the parser gives.
+    width: int = args.width
+    justify: bool = args.justify
+    files: list[str] = args.files
     any_changed = False
-    for f in args.files:
-        if f.endswith(".ipynb") and process_notebook(
-            f, args.width, justify=args.justify
-        ):
+    for f in files:
+        if f.endswith(".ipynb") and process_notebook(f, width, justify=justify):
             print(f"reformatted {f}")
             any_changed = True
     return 1 if any_changed else 0
