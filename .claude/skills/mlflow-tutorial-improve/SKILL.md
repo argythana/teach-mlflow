@@ -3,22 +3,19 @@ name: mlflow-tutorial-improve
 description: >
   Use this skill when working inside this MLflow teaching repository to
   improve a tutorial notebook under `src/` (the `basics/`, `ml/`, or
-  `gen_ai/` track) — expand,
-  annotate, rewrite, draft a new section, restructure for flow, or
-  clean up after a previous refactor — so it is friendlier for beginner
-  data scientists and researchers. Trigger on prompts like "expand this
-  MLflow section", "explain this MLflow concept better", "make this
-  notebook beginner-friendly", "what context should we add to this
-  cell", "why does this MLflow feature exist", "the logical flow here
-  is broken", or "clean up the leftover trees / placeholder cells / old
-  references". If the target notebook or cell is unclear, ask which one
-  to edit after routing. Do NOT use it for general Python or ML
-  tutorial writing outside this repo, for editing the upstream MLflow
-  library itself, for non-tutorial docs in this repo (`README.md`,
-  `CLAUDE.md`), or for non-teaching changes to the notebooks (file
-  moves, dependency bumps, formatting, kernel metadata). For dependency
-  work use `uv-deps`; for staging edits use `git-staging`; for the
-  commit message use `commit-message`.
+  `gen_ai/` track): expand, annotate, rewrite, draft a new section,
+  restructure for flow, or clean up after a previous refactor, so it suits
+  beginner data scientists and researchers. Trigger on prompts like
+  "expand this MLflow section", "explain this MLflow concept better",
+  "make this notebook beginner-friendly", "what context should we add to
+  this cell", "why does this MLflow feature exist", "the logical flow here
+  is broken", or "clean up the leftover placeholder cells". If the target
+  notebook or cell is unclear, ask after routing. Do NOT use it for Python
+  or ML tutorial writing outside this repo, the upstream MLflow library,
+  `README.md` or `CLAUDE.md`, or non-teaching notebook changes (file
+  moves, dependency bumps, formatting, kernel metadata); use `uv-deps` for
+  dependencies, `git-staging` for staging and `commit-message` for commit
+  messages.
 ---
 
 # MLflow tutorial improve
