@@ -112,6 +112,9 @@ management.
 uv sync          # creates .venv/ and installs locked dependencies
 ```
 
+Optional: `uv sync --group shap` also installs `shap`, which adds SHAP
+feature-importance plots to `ml/e_model_evaluation`; the notebook runs without it.
+
 If you use [`direnv`](https://direnv.net), run `direnv allow` once at the repo root and
 it activates the venv whenever you enter the folder (`.envrc`); put any personal
 additions in an untracked `.envrc.local`, which `.envrc` loads if it exists. Otherwise,
@@ -194,6 +197,10 @@ fails with a connection error to that address, start it with `ollama serve`.
 [`src/setup/a_ollama_setup.ipynb`](src/setup/a_ollama_setup.ipynb) walks through the
 install, the checks, choosing a model size for your machine, and troubleshooting. The
 `basics/` and `ml/` tracks don't need Ollama.
+
+**Windows:** `i_rag_capstone` stores its index in Milvus Lite, which has no native
+Windows build (`uv sync` skips it there). Run that notebook on Linux or macOS, or inside
+WSL2 on Windows.
 
 **Optional: a hosted model.** A small local model is enough to learn MLflow, but a
 stronger hosted model gives better answers and a more reliable judge. The notebooks show

@@ -16,6 +16,7 @@ dependencies = [
     "llama-index-llms-ollama>=0.11.0",
     "llama-index-vector-stores-milvus>=1.1.0",
     "matplotlib>=3.10.9",
+    "milvus-lite>=3.0 ; sys_platform != 'win32'",
     "mlflow>=3.12.0",
     "numpy>=2.4.4",
     "nvidia-ml-py>=13.610.43",
@@ -44,6 +45,9 @@ dev = [
     "prek>=0.5.3",
     "pytest>=9.1.1",
     "ruff>=0.16.7",
+]
+shap = [
+    "shap>=0.54.1",
 ]
 
 [tool.ruff]
