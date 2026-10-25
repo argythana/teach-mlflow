@@ -52,6 +52,9 @@ on:
       - "src/gen_ai/**"
       - "src/setup/**"
       - ".github/workflows/genai-notebooks.yml"
+      # A dependency change can break the GenAI notebooks without touching them.
+      - "pyproject.toml"
+      - "uv.lock"
   schedule:
     - cron: "17 3 * * 1" # Mondays 03:17 UTC
   workflow_dispatch:
@@ -121,9 +124,12 @@ jobs:
         with:
           enable-cache: true
 
+      # --group azure installs the optional hosted-model packages, so the lockfile's
+      # Azure group is proven to install. No notebook calls Azure: the workflow
+      # sets no credentials, and the hosted swaps are commented or guarded.
       - name: Install dependencies from uv.lock
         run: |
-          uv sync --locked
+          uv sync --locked --group azure
           echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
 
       # The official script also registers and starts a systemd service that

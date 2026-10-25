@@ -151,9 +151,11 @@ jobs:
         with:
           enable-cache: true
 
+      # --group shap installs the optional shap group, so ml/e_model_evaluation's
+      # SHAP branch runs here as it did for the outputs stored in the notebook.
       - name: Install dependencies from uv.lock
         run: |
-          uv sync --locked
+          uv sync --locked --group shap
           echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
 
       # fetch_california_housing downloads its data on first use; caching it
