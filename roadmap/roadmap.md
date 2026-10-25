@@ -2,7 +2,7 @@
 
 A living summary of what this teaching repo covers and what's planned. The detailed
 per-notebook design history of the traditional-ML track lives in git history; this file
-is the scannable overview. The build-out plan for the GenAI track is in
+is the scannable overview. The record of how the GenAI track was built is in
 [`plan.md`](./plan.md).
 
 ## Repository structure
