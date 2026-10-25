@@ -17,6 +17,19 @@ In Greece, Computer Science university courses rarely teach MLflow, even though 
 essential for data scientists. The goal of this repo is to provide beginner-friendly,
 up-to-date learning resources that help fill that gap.
 
+## Quickstart
+
+```bash
+git clone https://github.com/argythana/teach-mlflow.git && cd teach-mlflow
+uv sync                                                 # Python 3.14 env from uv.lock
+cd src && uv run mlflow server --host 127.0.0.1 --port 5000  # terminal 1: tracking server
+uv run jupyter lab                                      # terminal 2, from the repo root
+```
+
+Then open [`src/basics/a_setup_mlflow.ipynb`](src/basics/a_setup_mlflow.ipynb). The
+`ml/` and `gen_ai/` tracks use port `5001`, and `gen_ai/` also needs a local Ollama: see
+[Setup](#setup) and [GenAI track prerequisites](#genai-track-prerequisites).
+
 ## The tutorials
 
 Notebooks are grouped by track. Within each track folder, the notebook files are
@@ -27,33 +40,35 @@ terminology, and "why this feature exists" context the upstream docs assume or s
 **`basics/` — shared foundations** (local server on port `5000`), the starting point for
 either track:
 
-- `a_setup_mlflow` — what MLflow solves; the `ui` vs `server` subcommands for starting
-  MLflow; connecting a notebook to a tracking server.
-- `b_tracking_quickstart` — log a model, parameters, and metrics; the three stores
-  (backend / artifact / registry); loading a model back as a `pyfunc`.
+- [`a_setup_mlflow`](src/basics/a_setup_mlflow.ipynb) — what MLflow solves; the `ui` vs
+  `server` subcommands for starting MLflow; connecting a notebook to a tracking server.
+- [`b_tracking_quickstart`](src/basics/b_tracking_quickstart.ipynb) — log a model,
+  parameters, and metrics; the three stores (backend / artifact / registry); loading a
+  model back as a `pyfunc`.
 
 **`ml/` — traditional-ML track** (local server on port `5001`):
 
-- `a_model_logging` — logging scikit-learn models well: safe serialization with `skops`,
-  and the one-line `mlflow.sklearn.autolog()`.
-- `b_hyperparameter_tuning` — an Optuna sweep with parent/child runs, and a first look
-  at the model registry.
-- `c_logging_plots` — log EDA and diagnostic figures across a sweep with
-  `mlflow.log_figure`.
-- `d_logging_callbacks` — XGBoost + Optuna callbacks; parent-run metric history vs
-  stdout heartbeats.
-- `e_model_evaluation` — `mlflow.models.evaluate()`, custom metrics, and validation
-  gates (CI for models).
-- `f_model_registry` — versions, `@champion` / `@challenger` aliases, the promotion
-  lifecycle, and rollback.
-- `g_model_serving` — serve a registered model over REST with `mlflow models serve`; the
-  `/invocations` contract, signature enforcement, and the container path.
-- `h_dataset_logging` — `mlflow.data` + `log_input` for dataset lineage (raw vs
-  engineered features, digests).
-- `i_system_metrics` — `system/*` resource observability (CPU / RAM / GPU) under a heavy
-  training load.
-- `j_capstone_end_to_end` — one model through the full lifecycle: feature-engineer →
-  tune → evaluate → gate → register → serve.
+- [`a_model_logging`](src/ml/a_model_logging.ipynb) — logging scikit-learn models well:
+  safe serialization with `skops`, and the one-line `mlflow.sklearn.autolog()`.
+- [`b_hyperparameter_tuning`](src/ml/b_hyperparameter_tuning.ipynb) — an Optuna sweep
+  with parent/child runs, and a first look at the model registry.
+- [`c_logging_plots`](src/ml/c_logging_plots.ipynb) — log EDA and diagnostic figures
+  across a sweep with `mlflow.log_figure`.
+- [`d_logging_callbacks`](src/ml/d_logging_callbacks.ipynb) — XGBoost + Optuna
+  callbacks; parent-run metric history vs stdout heartbeats.
+- [`e_model_evaluation`](src/ml/e_model_evaluation.ipynb) — `mlflow.models.evaluate()`,
+  custom metrics, and validation gates (CI for models).
+- [`f_model_registry`](src/ml/f_model_registry.ipynb) — versions, `@champion` /
+  `@challenger` aliases, the promotion lifecycle, and rollback.
+- [`g_model_serving`](src/ml/g_model_serving.ipynb) — serve a registered model over REST
+  with `mlflow models serve`; the `/invocations` contract, signature enforcement, and
+  the container path.
+- [`h_dataset_logging`](src/ml/h_dataset_logging.ipynb) — `mlflow.data` + `log_input`
+  for dataset lineage (raw vs engineered features, digests).
+- [`i_system_metrics`](src/ml/i_system_metrics.ipynb) — `system/*` resource
+  observability (CPU / RAM / GPU) under a heavy training load.
+- [`j_capstone_end_to_end`](src/ml/j_capstone_end_to_end.ipynb) — one model through the
+  full lifecycle: feature-engineer → tune → evaluate → gate → register → serve.
 
 Together these form the traditional-ML MLOps spine (tracking → evaluation → registry →
 serving).
@@ -77,27 +92,34 @@ up. The whole track runs **fully local on `gemma3:4b`** by default (zero cost, n
 key); where a stronger hosted model would help, the notebook shows the swap as an
 optional step. See [GenAI track prerequisites](#genai-track-prerequisites).
 
-- `a_tracing_quickstart` — automatic and manual tracing (`mlflow.openai.autolog()`,
-  `@mlflow.trace`) against a local Ollama model; spans, traces, and the Traces tab.
-- `b_tracing_a_multistep_app` — a hand-built RAG pipeline with nested retriever / chain
-  / LLM spans, and how the trace shows which step produced a bad answer.
-- `c_genai_evaluation` — `mlflow.genai.evaluate()` with built-in and custom LLM-as-judge
-  scorers, using a local judge (`ollama:/gemma3:4b`).
-- `d_langchain_agent` — a tool-using LangChain agent traced by the one-line
-  `mlflow.langchain.autolog()` (uses `qwen3:1.7b`, a model that can call tools).
-- `e_prompt_registry` — register, version, and alias prompts, then promote the version
-  the `c_` judge prefers.
-- `f_genai_app_serving` — log a GenAI app with models-from-code and serve it over REST
-  on port `5002`; prompt promotions reach the endpoint with no redeploy.
-- `g_feedback_and_monitoring` — human and code feedback on traces (`log_feedback`), and
-  LLM-judge monitoring over `search_traces`.
-- `h_dspy_optimization` — (advanced) a DSPy optimizer searches for few-shot
-  demonstrations against a metric while `mlflow.dspy.autolog()` records each compile; in
-  the stored run the optimized program ties the baseline, and the notebook discusses
-  why.
-- `i_rag_capstone` — the finale: local `nomic-embed-text` embeddings, a Milvus Lite
-  index, and a LlamaIndex query engine, traced, evaluated, prompt-versioned, and
-  monitored; its serving step points back to `f_`.
+- [`a_tracing_quickstart`](src/gen_ai/a_tracing_quickstart.ipynb) — automatic and manual
+  tracing (`mlflow.openai.autolog()`, `@mlflow.trace`) against a local Ollama model;
+  spans, traces, and the Traces tab.
+- [`b_tracing_a_multistep_app`](src/gen_ai/b_tracing_a_multistep_app.ipynb) — a
+  hand-built RAG pipeline with nested retriever / chain / LLM spans, and how the trace
+  shows which step decided an answer.
+- [`c_genai_evaluation`](src/gen_ai/c_genai_evaluation.ipynb) —
+  `mlflow.genai.evaluate()` with built-in and custom LLM-as-judge scorers, using a local
+  judge (`ollama:/gemma3:4b`).
+- [`d_langchain_agent`](src/gen_ai/d_langchain_agent.ipynb) — a tool-using LangChain
+  agent traced by the one-line `mlflow.langchain.autolog()` (uses `qwen3:1.7b`, a model
+  that can call tools).
+- [`e_prompt_registry`](src/gen_ai/e_prompt_registry.ipynb) — register, version, and
+  alias prompts, then promote the version the `c_` judge prefers.
+- [`f_genai_app_serving`](src/gen_ai/f_genai_app_serving.ipynb) — log a GenAI app with
+  models-from-code and serve it over REST on port `5002`; prompt promotions reach the
+  endpoint with no redeploy.
+- [`g_feedback_and_monitoring`](src/gen_ai/g_feedback_and_monitoring.ipynb) — human and
+  code feedback on traces (`log_feedback`), and LLM-judge monitoring over
+  `search_traces`.
+- [`h_dspy_optimization`](src/gen_ai/h_dspy_optimization.ipynb) — (advanced) a DSPy
+  optimizer searches for few-shot demonstrations against a metric while
+  `mlflow.dspy.autolog()` records each compile; in the stored run the optimized program
+  ties the baseline, and the notebook discusses why.
+- [`i_rag_capstone`](src/gen_ai/i_rag_capstone.ipynb) — the finale: local
+  `nomic-embed-text` embeddings, a Milvus Lite index, and a LlamaIndex query engine,
+  traced, evaluated, prompt-versioned, and monitored; its serving step points back to
+  `f_`.
 
 ![MLflow Traces view of the d_langchain_agent run: the user's question, the agent's ChatOpenAI, add and multiply steps, the tool results 7 and 35, and its final answer](docs/images/mlflow-ui-agent-trace.png)
 
