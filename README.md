@@ -33,9 +33,11 @@ Then open [`src/basics/a_setup_mlflow.ipynb`](src/basics/a_setup_mlflow.ipynb). 
 ## The tutorials
 
 Notebooks are grouped by track. Within each track folder, the notebook files are
-prefixed `a_`, `b_`, `c_`, … so the intended reading order is obvious from `ls`. Each
-notebook stays close to the official MLflow material but adds the prerequisites,
-terminology, and "why this feature exists" context the upstream docs assume or skip.
+prefixed `a_`, `b_`, `c_`, … so the intended reading order is obvious from `ls`. Most
+notebooks adapt an official MLflow tutorial and add the prerequisites, terminology, and
+"why this feature exists" context the upstream docs assume or skip; the few with no
+upstream counterpart (such as `h_dataset_logging`, `j_capstone_end_to_end` and the
+Ollama setup) say so at the top.
 
 **`basics/` — shared foundations** (local server on port `5000`), the starting point for
 either track:
