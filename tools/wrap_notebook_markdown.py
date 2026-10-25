@@ -11,7 +11,7 @@ CSS default for the last line of a justified block).
 Scope and safety:
   * Only ``.ipynb`` *markdown* cells are touched. Code cells, outputs, and all
     notebook metadata are left byte-identical.
-  * Breaks only at ``. ? ; :`` followed by whitespace (NOT commas).
+  * Breaks only at ``. ? ; : —`` followed by whitespace (NOT commas).
   * Never breaks inside inline code spans (`` `...` ``) or links ``[..](..)``,
     and skips a small set of abbreviations (``e.g.``, ``i.e.``, …). Decimals
     like ``3.14`` and ``gemma3:4b`` are safe because the punctuation there is
@@ -85,7 +85,7 @@ def _protected(text: str) -> list[tuple[int, int]]:
 
 
 def semantic_wrap(text: str, width: int) -> str:
-    """Reflow one logical paragraph into hard-broken lines."""
+    """Reflow one logical paragraph into source lines joined by soft breaks (single newlines)."""
     text = " ".join(text.split())
     if not text:
         return text

@@ -83,7 +83,8 @@ by one-line `mlflow.langchain.autolog()`; `e_` prompt registry (register/version
 promote the version that wins the `c_` judge); `f_` serves a GenAI app over REST
 (models-from-code); `g_` closes the loop — human/code feedback (`log_feedback`) +
 LLM-judge monitoring over `search_traces`; `h_` DSPy optimization; `i_` the RAG
-capstone. Each notebook keeps a hosted-model (Azure/OpenAI) swap as an optional section.
+capstone. Where a stronger hosted model helps (`a_`, `c_`, `d_`, `h_`, `i_`), the
+notebook keeps a hosted-model (Azure/OpenAI) swap as an optional section.
 
 | #   | Notebook                            | Teaches                                                                                                                                                                                                                                                                                                                                                                    | Parallels (ml)            |
 | --- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
