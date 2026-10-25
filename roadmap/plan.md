@@ -87,5 +87,5 @@ documented system prerequisite**, not a Python dependency.
 
 `a_` → … → `i_` are built and contiguous — the GenAI track is **feature-complete**:
 every notebook is written and runs end to end on local Ollama. `i_rag_capstone` is the
-realistic finale. Remaining: a possible future `databricks/` track for managed-only
-features (Review App, labeling, scheduled scorers) — see roadmap.md.
+finale. Remaining: a possible future `databricks/` track for managed-only features
+(Review App, labeling, scheduled scorers) — see roadmap.md.

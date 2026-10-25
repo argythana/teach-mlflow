@@ -91,8 +91,10 @@ optional step. See [GenAI track prerequisites](#genai-track-prerequisites).
   on port `5002`; prompt promotions reach the endpoint with no redeploy.
 - `g_feedback_and_monitoring` — human and code feedback on traces (`log_feedback`), and
   LLM-judge monitoring over `search_traces`.
-- `h_dspy_optimization` — (advanced) a DSPy optimizer improves a prompt against a metric
-  while `mlflow.dspy.autolog()` records each compile.
+- `h_dspy_optimization` — (advanced) a DSPy optimizer searches for few-shot
+  demonstrations against a metric while `mlflow.dspy.autolog()` records each compile; in
+  the stored run the optimized program ties the baseline, and the notebook discusses
+  why.
 - `i_rag_capstone` — the finale: local `nomic-embed-text` embeddings, a Milvus Lite
   index, and a LlamaIndex query engine, traced, evaluated, prompt-versioned, and
   monitored; its serving step points back to `f_`.
