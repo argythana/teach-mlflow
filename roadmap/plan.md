@@ -1,15 +1,16 @@
-# Plan: GenAI tutorial track + shared `basics/`
+# Build record: GenAI tutorial track + shared `basics/`
 
-The forward-looking build plan. For the at-a-glance status of both tracks see
+How the GenAI track and the shared `basics/` folder were built, and the decisions behind
+them. The build is finished; for the at-a-glance status of both tracks see
 [`roadmap.md`](./roadmap.md).
 
 ## Context
 
-The repo regrouped notebooks into `src/ml/` (traditional-ML, complete) and an empty
-`src/gen_ai/` placeholder. We are building out the **GenAI track** without re-teaching
-the foundations both tracks share. Two foundations are track-agnostic — `a_setup_mlflow`
-(infrastructure) and `b_tracking_quickstart` (experiments, runs, the three stores) — so
-they now live in `src/basics/`.
+Before this build the repo had regrouped its notebooks into `src/ml/` (traditional ML,
+complete) and an empty `src/gen_ai/` placeholder. The **GenAI track** was then built
+without re-teaching the foundations both tracks share. Two foundations are
+track-agnostic — `a_setup_mlflow` (infrastructure) and `b_tracking_quickstart`
+(experiments, runs, the three stores) — so they moved to `src/basics/`.
 
 **Decisions taken:**
 
@@ -87,5 +88,5 @@ documented system prerequisite**, not a Python dependency.
 
 `a_` → … → `i_` are built and contiguous — the GenAI track is **feature-complete**:
 every notebook is written and runs end to end on local Ollama. `i_rag_capstone` is the
-realistic finale. Remaining: a possible future `databricks/` track for managed-only
-features (Review App, labeling, scheduled scorers) — see roadmap.md.
+finale. Remaining: a possible future `databricks/` track for managed-only features
+(Review App, labeling, scheduled scorers) — see roadmap.md.

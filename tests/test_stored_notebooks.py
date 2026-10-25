@@ -1,8 +1,9 @@
 """Structural checks on every tracked notebook's stored outputs.
 
-CI executes only src/basics/ and src/ml/; the src/gen_ai/ and src/setup/
-notebooks need a local Ollama model and are checked here instead, from what
-was stored when the author last ran them. A notebook must have been saved
+CI executes the notebooks in separate workflows (notebooks.yml for
+src/basics/ and src/ml/, genai-notebooks.yml for src/gen_ai/ and src/setup/
+on local Ollama models) but never writes their outputs back. These tests
+check what is stored in the repo instead. A notebook must have been saved
 from one clean top-to-bottom run (or with no outputs at all), and its outputs
 must not show the author's machine.
 """

@@ -91,8 +91,10 @@ optional step. See [GenAI track prerequisites](#genai-track-prerequisites).
   on port `5002`; prompt promotions reach the endpoint with no redeploy.
 - `g_feedback_and_monitoring` — human and code feedback on traces (`log_feedback`), and
   LLM-judge monitoring over `search_traces`.
-- `h_dspy_optimization` — (advanced) a DSPy optimizer improves a prompt against a metric
-  while `mlflow.dspy.autolog()` records each compile.
+- `h_dspy_optimization` — (advanced) a DSPy optimizer searches for few-shot
+  demonstrations against a metric while `mlflow.dspy.autolog()` records each compile; in
+  the stored run the optimized program ties the baseline, and the notebook discusses
+  why.
 - `i_rag_capstone` — the finale: local `nomic-embed-text` embeddings, a Milvus Lite
   index, and a LlamaIndex query engine, traced, evaluated, prompt-versioned, and
   monitored; its serving step points back to `f_`.
@@ -109,6 +111,9 @@ management.
 ```bash
 uv sync          # creates .venv/ and installs locked dependencies
 ```
+
+Optional: `uv sync --group shap` also installs `shap`, which adds SHAP
+feature-importance plots to `ml/e_model_evaluation`; the notebook runs without it.
 
 If you use [`direnv`](https://direnv.net), run `direnv allow` once at the repo root and
 it activates the venv whenever you enter the folder (`.envrc`); put any personal
@@ -192,6 +197,10 @@ fails with a connection error to that address, start it with `ollama serve`.
 [`src/setup/a_ollama_setup.ipynb`](src/setup/a_ollama_setup.ipynb) walks through the
 install, the checks, choosing a model size for your machine, and troubleshooting. The
 `basics/` and `ml/` tracks don't need Ollama.
+
+**Windows:** `i_rag_capstone` stores its index in Milvus Lite, which has no native
+Windows build (`uv sync` skips it there). Run that notebook on Linux or macOS, or inside
+WSL2 on Windows.
 
 **Optional: a hosted model.** A small local model is enough to learn MLflow, but a
 stronger hosted model gives better answers and a more reliable judge. The notebooks show

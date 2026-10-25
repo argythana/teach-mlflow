@@ -166,8 +166,8 @@ tracking server.) The `basics/` and `ml/` tracks don't need Ollama.
 - `.github/workflows/genai-notebooks.yml` — CI that installs Ollama on the runner and
   executes `src/setup/` and the `gen_ai/` notebooks on the local models, weekly and on
   pushes that touch them.
-- `roadmap/` — the master roadmap summary (`roadmap.md`) and the build-out plan
-  (`plan.md`).
+- `roadmap/` — the master roadmap summary (`roadmap.md`) and the record of how the GenAI
+  track was built (`plan.md`).
 - `README.md` — audience, motivation, and setup for readers of the repo.
 - `pyproject.toml` / `uv.lock` — dependencies grow as tutorials cover more MLflow
   features (`mlflow`, `jupyter`, `scikit-learn`, `skops`, `optuna`, …).

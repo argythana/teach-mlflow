@@ -2,7 +2,7 @@
 
 A living summary of what this teaching repo covers and what's planned. The detailed
 per-notebook design history of the traditional-ML track lives in git history; this file
-is the scannable overview. The build-out plan for the GenAI track is in
+is the scannable overview. The record of how the GenAI track was built is in
 [`plan.md`](./plan.md).
 
 ## Repository structure
@@ -76,7 +76,7 @@ agent has to plan), because `gemma3:4b` doesn't support tools. Embedding model f
 [`src/setup/a_ollama_setup.ipynb`](../src/setup/a_ollama_setup.ipynb).
 
 **Status:** `a_`–`i_` **built, run live on local Ollama, and contiguous** — the full
-GenAI track, ending in `i_rag_capstone` (a realistic Milvus Lite + LlamaIndex RAG that
+GenAI track, ending in `i_rag_capstone` (a small Milvus Lite + LlamaIndex RAG that
 threads the whole track). `a_` tracing quickstart; `b_` hand-built RAG; `c_`
 LLM-as-judge (local `ollama:/` judge, `temperature=0`); `d_` LangChain tool-agent traced
 by one-line `mlflow.langchain.autolog()`; `e_` prompt registry (register/version/alias +
@@ -85,17 +85,17 @@ promote the version that wins the `c_` judge); `f_` serves a GenAI app over REST
 LLM-judge monitoring over `search_traces`; `h_` DSPy optimization; `i_` the RAG
 capstone. Each notebook keeps a hosted-model (Azure/OpenAI) swap as an optional section.
 
-| #   | Notebook                            | Teaches                                                                                                                                                                                                                                                                                                                   | Parallels (ml)            |
-| --- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| a   | `a_tracing_quickstart` ✅           | The Traces tab lights up: `mlflow.openai.autolog()` against Ollama's OpenAI-compatible endpoint + a manual `@mlflow.trace`.                                                                                                                                                                                               | the basics quickstart     |
-| b   | `b_tracing_a_multistep_app` ✅      | Hand-built RAG (no framework): nested `RETRIEVER`/`CHAIN`/`LLM` spans; the failure-diagnosis payoff.                                                                                                                                                                                                                      | —                         |
-| c   | `c_genai_evaluation` ✅             | `mlflow.genai.evaluate()` with built-in + custom scorers; judge = local `ollama:/gemma3:4b` (`temperature=0` for reproducible scores); hosted Azure/OpenAI judge shown as an optional swap.                                                                                                                               | `e_model_evaluation`      |
-| d   | `d_langchain_agent` ✅              | A tool-using LangChain agent traced by one-line `mlflow.langchain.autolog()` — the framework alternative to `b_`'s manual spans, on a runtime-decided agent loop.                                                                                                                                                         | —                         |
-| e   | `e_prompt_registry` ✅              | `register_prompt`, versions + aliases, load by alias, and promote the version that wins the `c_` LLM-as-judge comparison.                                                                                                                                                                                                 | `f_model_registry`        |
-| f   | `f_genai_app_serving` ✅            | Log a GenAI app via models-from-code, `mlflow models serve` it on 5002, curl `/invocations`; the served app loads `qa-answer@production` per request, so prompt promotion ships with no redeploy.                                                                                                                         | `g_model_serving`         |
-| g   | `g_feedback_and_monitoring` ✅      | Human + code feedback on traces (`log_feedback`); LLM-judge monitoring over `search_traces` (OSS). Flags the Databricks-managed boundary.                                                                                                                                                                                 | —                         |
-| h   | `h_dspy_optimization` (advanced) ✅ | A DSPy optimizer (`BootstrapFewShot`) auto-improves a prompt against a metric; `mlflow.dspy.autolog()` records every compile + saves the optimized program. Local Ollama LM via LiteLLM (`ollama_chat/gemma3:4b`, non-reasoning so it parses cleanly); Azure optional. The prompt analog of `ml/b_hyperparameter_tuning`. | `b_hyperparameter_tuning` |
-| i   | `i_rag_capstone` ✅                 | Realistic RAG finale: local **nomic-embed-text** embeddings → **Milvus Lite** index (`dim=768`) → LlamaIndex query engine (traced) → retrieval + answer judge eval → prompt registry → feedback/monitor → serve (← `f_`). Fully local; Azure swap shown commented. Threads the whole track.                               | `j_capstone_end_to_end`   |
+| #   | Notebook                            | Teaches                                                                                                                                                                                                                                                                                                                                                                    | Parallels (ml)            |
+| --- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| a   | `a_tracing_quickstart` ✅           | The Traces tab lights up: `mlflow.openai.autolog()` against Ollama's OpenAI-compatible endpoint + a manual `@mlflow.trace`.                                                                                                                                                                                                                                                | the basics quickstart     |
+| b   | `b_tracing_a_multistep_app` ✅      | Hand-built RAG (no framework): nested `RETRIEVER`/`CHAIN`/`LLM` spans; the failure-diagnosis payoff.                                                                                                                                                                                                                                                                       | —                         |
+| c   | `c_genai_evaluation` ✅             | `mlflow.genai.evaluate()` with built-in + custom scorers; judge = local `ollama:/gemma3:4b` (`temperature=0` for reproducible scores); hosted Azure/OpenAI judge shown as an optional swap.                                                                                                                                                                                | `e_model_evaluation`      |
+| d   | `d_langchain_agent` ✅              | A tool-using LangChain agent traced by one-line `mlflow.langchain.autolog()` — the framework alternative to `b_`'s manual spans, on a runtime-decided agent loop.                                                                                                                                                                                                          | —                         |
+| e   | `e_prompt_registry` ✅              | `register_prompt`, versions + aliases, load by alias, and promote the version that wins the `c_` LLM-as-judge comparison.                                                                                                                                                                                                                                                  | `f_model_registry`        |
+| f   | `f_genai_app_serving` ✅            | Log a GenAI app via models-from-code, `mlflow models serve` it on 5002, curl `/invocations`; the served app loads `qa-answer@production` per request, so prompt promotion ships with no redeploy.                                                                                                                                                                          | `g_model_serving`         |
+| g   | `g_feedback_and_monitoring` ✅      | Human + code feedback on traces (`log_feedback`); LLM-judge monitoring over `search_traces` (OSS). Flags the Databricks-managed boundary.                                                                                                                                                                                                                                  | —                         |
+| h   | `h_dspy_optimization` (advanced) ✅ | A DSPy optimizer (`BootstrapFewShot`) searches for few-shot demonstrations against a metric (the stored run ties the baseline); `mlflow.dspy.autolog()` records every compile + saves the optimized program. Local Ollama LM via LiteLLM (`ollama_chat/gemma3:4b`, non-reasoning so it parses cleanly); Azure optional. The prompt analog of `ml/b_hyperparameter_tuning`. | `b_hyperparameter_tuning` |
+| i   | `i_rag_capstone` ✅                 | RAG finale on a 14-fact teaching corpus: local **nomic-embed-text** embeddings → **Milvus Lite** index (`dim=768`) → LlamaIndex query engine (traced) → retrieval + answer judge eval → prompt registry → feedback/monitor → serve (← `f_`). Fully local; Azure swap shown commented. Threads the whole track.                                                             | `j_capstone_end_to_end`   |
 
 **Advanced notebooks (built):**
 
@@ -105,8 +105,8 @@ capstone. Each notebook keeps a hosted-model (Azure/OpenAI) swap as an optional 
   for an ML audience and Ollama-native, but its MLflow story isn't native, so it loses
   for an *MLflow* tutorial. AdalFlow is noted in `h_` as the alternative paradigm.
 - **LlamaIndex / Milvus RAG — built as `i_rag_capstone`** (the GenAI finale). Resolved
-  the "full notebook vs `b_` appendix" question by making it the realistic capstone:
-  local `nomic-embed-text` embeddings + **Milvus Lite** + LlamaIndex,
+  the "full notebook vs `b_` appendix" question by making it the capstone: local
+  `nomic-embed-text` embeddings + **Milvus Lite** + LlamaIndex,
   traced/evaluated/governed/served end to end, with the `c_` retrieval scorers finally
   grading a real retriever.
 
@@ -121,7 +121,7 @@ and cross-link the `ml/` analog rather than re-teaching shared MLflow concepts.
 basics/ (a_setup → b_tracking_quickstart)
    ├─► ml/      a_ … j_   ✅ complete
    └─► gen_ai/  a_ → b_ → c_ → d_ → e_ (prompts) → f_ (serving) → g_ (feedback)   ✅
-                → h_ (DSPy) → i_ (realistic RAG capstone)   ✅  (a_–i_ built and run on local Ollama)
+                → h_ (DSPy) → i_ (RAG capstone)   ✅  (a_–i_ built and run on local Ollama)
 ```
 
 ## Beyond this roadmap (not yet planned)
