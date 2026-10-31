@@ -1,14 +1,24 @@
-# Executes src/setup/a_ollama_setup.ipynb and every notebook in src/gen_ai/ top
+# Executes src/setup/a_ollama_setup.ipynb and the notebooks in src/gen_ai/ top
 # to bottom against local language models served by Ollama on the runner, so
 # the GenAI half of the course is proven to run too. Any cell error fails the
-# job. The workflow uses no credentials and calls no hosted model: there is no
+# notebook's job. The workflow uses no credentials and calls no hosted model: there is no
 # .env on the runner and no secret is passed in, so every optional Azure/OpenAI
 # cell takes its "skipped / no credentials" branch.
 #
-# Why a separate workflow from notebooks.yml: the job needs an Ollama server and
-# about 5 GB of model weights, and on a CPU-only runner it takes over an hour.
+# Why a separate workflow from notebooks.yml: each job needs an Ollama server
+# and about 5 GB of model weights, and the model calls run on a CPU-only runner.
 # It runs weekly, on demand, and on pushes to main that touch the GenAI
 # notebooks, rather than on every push and pull request.
+#
+# Which notebooks run (tools/select_notebooks.py): on a push, only those whose
+# code changed since the push's previous commit, meaning a code cell added,
+# removed, reordered or edited; markdown and stored outputs do not count. The
+# weekly and manual runs, a push whose previous commit is unknown, and a push
+# that changes pyproject.toml, uv.lock or this file run them all. Each selected
+# notebook gets its own job, and the jobs run in parallel. That works because
+# the notebooks are independent: each one sets its own experiment, and
+# f_genai_app_serving registers the `qa-answer` prompt itself when
+# e_prompt_registry has not run first.
 #
 # Models, exactly the ones the track documents (src/setup/a_ollama_setup.ipynb):
 #   gemma3:4b         chat model and LLM judge for most notebooks (3.3 GB)
@@ -23,25 +33,26 @@
 # Ports, as the notebooks hard-code them:
 #   11434  Ollama
 #   5001   tracking server for src/gen_ai/ (src/setup/ uses none)
-#   5002   model server. src/gen_ai/f_genai_app_serving.ipynb starts `mlflow
-#          models serve` itself (its "Option A" cell) and stops it at the end,
-#          so the workflow starts nothing on 5002; it only checks that the port
-#          is free before and after that notebook.
+#   5002   model server. f_genai_app_serving and i_rag_capstone each start
+#          `mlflow models serve` themselves and stop it at the end, so the
+#          workflow starts nothing on 5002. Each runs on its own runner, where
+#          the port is free.
 #
 # Each notebook runs with its own directory as the working directory, as a
-# reader runs it, in reading order: setup first, then gen_ai a_ to i_. The
-# tracking server runs from $RUNNER_TEMP, so its mlflow.db and mlartifacts/ stay
-# out of the checkout. Executed copies are written to $RUNNER_TEMP too; the
-# tracked notebooks are never overwritten. f_ writes the gitignored file
-# src/gen_ai/_genai_app.py, and i_ writes src/gen_ai/_rag_app.py and
-# src/gen_ai/milvus_rag.db, as they do for a reader.
+# reader runs it. The tracking server runs from $RUNNER_TEMP, so its mlflow.db
+# and mlartifacts/ stay out of the checkout. Executed copies are written to
+# $RUNNER_TEMP too; the tracked notebooks are never overwritten. f_ writes the
+# gitignored file src/gen_ai/_genai_app.py, and i_ writes src/gen_ai/_rag_app.py
+# and src/gen_ai/milvus_rag.db, as they do for a reader.
 #
 # Timing: GitHub-hosted runners have no GPU, so every model call runs on 4 CPU
-# cores, one at a time (the notebooks run judges serially). Expect roughly
-# 60-120 minutes in all, with the evaluation-heavy notebooks (c_, e_, h_, i_)
-# taking 10-25 minutes each; a single cell can take several minutes, hence the
-# generous per-cell timeout. A failing notebook does not stop the later ones;
-# the step fails at the end and lists every notebook that failed.
+# cores, one at a time (the notebooks run judges serially). Each job spends
+# about 6 minutes on setup, mostly restoring the cached models. Executing a
+# notebook took 0-16 minutes in the 2026-10-31 run: i_ 16, e_ 7, c_ and h_ 4,
+# g_ 3, the rest 1 or less. With every notebook selected, the workflow takes
+# about as long as the i_ job, roughly 25 minutes. A single cell can take
+# several minutes, hence the generous per-cell timeout. A failing notebook
+# fails only its own job; the final job reports whether all of them passed.
 
 name: GenAI notebooks
 
@@ -67,10 +78,46 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  execute:
-    name: Execute setup and gen_ai notebooks on Ollama
+  select:
+    name: Select the notebooks whose code changed
     runs-on: ubuntu-latest
-    timeout-minutes: 240
+    timeout-minutes: 5
+    outputs:
+      notebooks: ${{ steps.select.outputs.notebooks }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      # The checkout holds only the tested commit; fetch the push's previous
+      # commit to diff against. If it cannot be fetched, every notebook runs.
+      - name: Select notebooks
+        id: select
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.before }}
+        run: |
+          args=()
+          if [ "$EVENT" != push ]; then args+=(--all); fi
+          if [ -n "$BASE" ] && [ "$BASE" != 0000000000000000000000000000000000000000 ]; then
+            git fetch --no-tags --depth=1 origin "$BASE" || echo "Could not fetch the base commit $BASE"
+          fi
+          selected=$(python3 tools/select_notebooks.py "${args[@]}" --base "$BASE" --head HEAD \
+            --always pyproject.toml --always uv.lock --always .github/workflows/genai-notebooks.yml \
+            src/setup src/gen_ai)
+          echo "notebooks=$selected" >> "$GITHUB_OUTPUT"
+
+  execute:
+    name: ${{ matrix.notebook }}
+    needs: select
+    if: ${{ needs.select.outputs.notebooks != '[]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        notebook: ${{ fromJSON(needs.select.outputs.notebooks) }}
     env:
       # Seconds a single cell may run. The longest cells call the local judge
       # 15-20 times in a row on CPU (e_prompt_registry, i_rag_capstone).
@@ -183,8 +230,11 @@ jobs:
           du -sh ~/.ollama/models
           df -h /
 
+      # On a cache miss every parallel job pulls the models and tries to save
+      # them; the first save wins and the others only warn.
       - name: Save Ollama models to the cache
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        continue-on-error: true
         uses: actions/cache/save@v6.1.0
         with:
           path: ~/.ollama/models
@@ -217,65 +267,26 @@ jobs:
           fi
           echo "MLflow tracking server is up on port 5001"
 
-      - name: Execute the setup and gen_ai notebooks
+      - name: Execute ${{ matrix.notebook }}
+        id: run
+        env:
+          NOTEBOOK: ${{ matrix.notebook }}
         run: |
-          failed=()
+          dir=$(dirname "$NOTEBOOK")
+          nb=$(basename "$NOTEBOOK")
+          echo "name=${nb%.ipynb}" >> "$GITHUB_OUTPUT"
+          cd "$dir"
+          jupyter nbconvert --to notebook --execute \
+            --ExecutePreprocessor.timeout="$CELL_TIMEOUT" \
+            --output-dir "$RUNNER_TEMP/executed" "$nb"
 
-          port_5002_free() {
-            ! ss -Hltn "sport = :5002" | grep -q .
-          }
-
-          run_notebook() {
-            local dir=$1 nb=$2 start=$SECONDS
-            echo "==> $dir/$nb (started $(date -u +%H:%M:%S) UTC)"
-            if (cd "$dir" && jupyter nbconvert --to notebook --execute \
-                  --ExecutePreprocessor.timeout="$CELL_TIMEOUT" \
-                  --output-dir "$RUNNER_TEMP/executed/$(basename "$dir")" "$nb"); then
-              echo "<== $dir/$nb passed in $(( (SECONDS - start) / 60 )) min"
-            else
-              echo "::error file=$dir/$nb::$dir/$nb failed after $(( (SECONDS - start) / 60 )) min"
-              failed+=("$dir/$nb")
-            fi
-          }
-
-          run_notebook src/setup a_ollama_setup.ipynb
-
-          for path in src/gen_ai/*.ipynb; do
-            nb=$(basename "$path")
-            if [ "$nb" = f_genai_app_serving.ipynb ] && ! port_5002_free; then
-              echo "::error::Port 5002 is busy, but $nb starts its own model server there"
-              failed+=("src/gen_ai/$nb")
-              continue
-            fi
-            run_notebook src/gen_ai "$nb"
-            if [ "$nb" = f_genai_app_serving.ipynb ]; then
-              # Its last cell stops the server it started; wait for the port.
-              for _ in $(seq 30); do
-                if port_5002_free; then break; fi
-                sleep 1
-              done
-              if port_5002_free; then
-                echo "Port 5002 is free again"
-              else
-                echo "::warning::Port 5002 is still in use after $nb"
-              fi
-            fi
-          done
-
-          if [ ${#failed[@]} -gt 0 ]; then
-            echo "Notebooks that failed:"
-            printf '  %s\n' "${failed[@]}"
-            exit 1
-          fi
-          echo "All notebooks passed"
-
-      # The executed copies hold every output, including per-row judge errors
-      # that the job log does not show; keep them for a week to diagnose failures.
-      - name: Upload the executed notebooks
-        if: ${{ !cancelled() }}
+      # The executed copy holds every output, including per-row judge errors
+      # that the job log does not show; keep it for a week to diagnose failures.
+      - name: Upload the executed notebook
+        if: ${{ !cancelled() && steps.run.outputs.name != '' }}
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: executed-notebooks
+          name: executed-${{ steps.run.outputs.name }}
           path: ${{ runner.temp }}/executed/
           retention-days: 7
           if-no-files-found: warn
@@ -290,3 +301,20 @@ jobs:
               tail -n 200 "$log"
             fi
           done
+
+  # One status for the whole workflow: passes when every selected notebook
+  # passed, or when no notebook's code changed.
+  result:
+    name: All selected GenAI notebooks passed
+    needs: [select, execute]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check the notebook jobs
+        env:
+          SELECT: ${{ needs.select.result }}
+          EXECUTE: ${{ needs.execute.result }}
+        run: |
+          echo "select: $SELECT, execute: $EXECUTE"
+          [ "$SELECT" = success ] && { [ "$EXECUTE" = success ] || [ "$EXECUTE" = skipped ]; }
