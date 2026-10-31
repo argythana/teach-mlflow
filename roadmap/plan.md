@@ -71,18 +71,19 @@ Built one at a time against a local Ollama model, in this sequence:
   traced/evaluated/governed/served, with a milvus-lite 3.0 `output_fields` search
   workaround baked into the notebook.
 
-**Editorial stance** (per the `mlflow-tutorial-improve` skill): lead with the *problem*,
-define GenAI jargon once (span, trace, scorer, judge, prompt version), cross-link the
-`ml/` analog instead of re-teaching shared MLflow concepts.
+**Editorial stance:** lead with the *problem*, define GenAI jargon once (span, trace,
+scorer, judge, prompt version), cross-link the `ml/` analog instead of re-teaching
+shared MLflow concepts.
 
 **Dependencies:** **added** — `openai`, `python-dotenv`, the LangChain v1 stack
-(`langchain`/`langchain-openai`/`langgraph`) for `d_`, `dspy` (brings `litellm`) for
-`h_`, and for `i_` the LlamaIndex packages (`llama-index-core`,
+(`langchain`/`langchain-core`/`langchain-openai`) for `d_`, `dspy` (brings `litellm`)
+for `h_`, and for `i_` the LlamaIndex packages (`llama-index-core`,
 `llama-index-vector-stores-milvus`, `llama-index-embeddings-ollama`,
-`llama-index-llms-ollama`) plus `pymilvus`, which bundles Milvus Lite. The optional
-hosted swap's `llama-index-embeddings-azure-openai` and `llama-index-llms-azure-openai`
-sit in a separate `azure` dependency group (`uv sync --group azure`). **Ollama is a
-documented system prerequisite**, not a Python dependency.
+`llama-index-llms-ollama`) plus `pymilvus` and `milvus-lite` (Milvus Lite, declared
+separately and skipped on Windows). The optional hosted swap's
+`llama-index-embeddings-azure-openai` and `llama-index-llms-azure-openai` sit in a
+separate `azure` dependency group (`uv sync --group azure`). **Ollama is a documented
+system prerequisite**, not a Python dependency.
 
 ## Build order
 

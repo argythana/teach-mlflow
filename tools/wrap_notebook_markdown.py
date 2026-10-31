@@ -4,14 +4,16 @@
 Wraps prose in the *source* at clause boundaries — the first ``. ? ; : —`` mark
 *after* a line passes the target width — so the diff stays readable. The breaks
 are soft (a single newline), so the rendered text re-flows. With ``--justify``
-each markdown cell is wrapped in a ``<div style="text-align: justify">`` so the
+each markdown cell is wrapped in a
+``<div style="text-align: justify; max-width: 90ch">`` so the
 render fills both margins; headings, being single lines, stay left-aligned (the
 CSS default for the last line of a justified block).
 
 Scope and safety:
   * Only ``.ipynb`` *markdown* cells are touched. Code cells, outputs, and all
     notebook metadata are left byte-identical.
-  * Breaks only at ``. ? ; : —`` followed by whitespace (NOT commas).
+  * Breaks at ``. ? ; : —`` followed by whitespace, not at commas; only a single
+    clause too long for the width is split at its commas, as a fallback.
   * Never breaks inside inline code spans (`` `...` ``) or links ``[..](..)``,
     and skips a small set of abbreviations (``e.g.``, ``i.e.``, …). Decimals
     like ``3.14`` and ``gemma3:4b`` are safe because the punctuation there is
