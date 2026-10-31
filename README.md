@@ -19,16 +19,28 @@ up-to-date learning resources that help fill that gap.
 
 ## Quickstart
 
+In one terminal, set up the environment and start the tracking server (it keeps
+running):
+
 ```bash
 git clone https://github.com/argythana/teach-mlflow.git && cd teach-mlflow
-uv sync                                                 # Python 3.14 env from uv.lock
-cd src && uv run mlflow server --host 127.0.0.1 --port 5000  # terminal 1: tracking server
-uv run jupyter lab                                      # terminal 2, from the repo root
+uv sync                     # Python 3.14 environment from uv.lock
+cd src && uv run mlflow server --host 127.0.0.1 --port 5000
+```
+
+In a second terminal, from the repo root:
+
+```bash
+uv run jupyter lab
 ```
 
 Then open [`src/basics/a_setup_mlflow.ipynb`](src/basics/a_setup_mlflow.ipynb). The
 `ml/` and `gen_ai/` tracks use port `5001`, and `gen_ai/` also needs a local Ollama: see
 [Setup](#setup) and [GenAI track prerequisites](#genai-track-prerequisites).
+
+What a traced GenAI run looks like in the MLflow UI (from `gen_ai/d_langchain_agent`):
+
+![MLflow Traces view of the d_langchain_agent run: the user's question, the agent's ChatOpenAI, add and multiply steps, the tool results 7 and 35, and its final answer](docs/images/mlflow-ui-agent-trace.png)
 
 ## The tutorials
 
@@ -123,8 +135,6 @@ optional step. See [GenAI track prerequisites](#genai-track-prerequisites).
   traced, evaluated, prompt-versioned, and monitored; its serving step points back to
   `f_`.
 
-![MLflow Traces view of the d_langchain_agent run: the user's question, the agent's ChatOpenAI, add and multiply steps, the tool results 7 and 35, and its final answer](docs/images/mlflow-ui-agent-trace.png)
-
 See `roadmap/` for the design decisions behind each track and what is planned next.
 
 ## Setup
@@ -161,10 +171,11 @@ The `mlflow` command comes from the venv that `uv sync` created, so activate it 
 new terminal first, or run `uv run mlflow ui …` instead.
 
 Leave it running and open the UI at the matching address (e.g. <http://127.0.0.1:5000>).
-In MLflow 3 this creates a `mlflow.db` (the SQLite backend store) and an `mlartifacts/`
-directory in the folder you started the server from. Start it from `src/` every time so
-they stay in one place, next to the notebooks; the notebooks' on-disk examples assume
-that layout. Both are per-developer runtime state and are gitignored.
+In MLflow 3 this creates a `mlflow.db` (the SQLite backend store) in the folder you
+started the server from, and an `mlartifacts/` directory there once a notebook logs its
+first artifact. Start it from `src/` every time so they stay in one place, next to the
+notebooks; the notebooks' on-disk examples assume that layout. Both are per-developer
+runtime state and are gitignored.
 
 If a notebook cell calls `mlflow.set_tracking_uri("http://127.0.0.1:<port>")` while no
 server is listening on that port, the logging calls will fail.
@@ -195,7 +206,7 @@ server. Everything they need runs locally and for free.
 - **Linux:** `curl -fsSL https://ollama.com/install.sh | sh`.
 
 ```bash
-ollama pull gemma3:4b         # the default: generation and the LLM-as-judge, every notebook
+ollama pull gemma3:4b         # the default: generation and the LLM-as-judge, every notebook but d_langchain_agent
 ollama pull qwen3:1.7b        # d_langchain_agent only: it needs a model that can call tools
 ollama pull nomic-embed-text  # i_rag_capstone only: the embedding model for the RAG index
 ```
