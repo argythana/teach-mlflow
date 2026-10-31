@@ -83,9 +83,10 @@ editorial principles. The `mlflow-tutorial-improve` skill at
   - Commit `uv.lock` along with `pyproject.toml` changes.
 - **Formatting and linting run as pre-commit hooks through `prek`**
   (`.pre-commit-config.yaml`; wire the git hook once with `uv run prek install`, or run
-  `uv run prek run --all-files`): `mdformat --wrap 88` for the Markdown docs,
-  `ruff format` + `ruff check --fix` for notebook code cells and for the Python files in
-  `tools/` and `tests/`, `mypy` (strict) for `tools/` and `tests/`, and
+  `uv run prek run --all-files`): `gitleaks` and `detect-private-key` against committed
+  secrets, `mdformat --wrap 88` for the Markdown docs, `ruff format` +
+  `ruff check --fix` for notebook code cells and for the Python files in `tools/` and
+  `tests/`, `mypy` (strict) for `tools/` and `tests/`, and
   `tools/wrap_notebook_markdown.py --width 120 --justify` for notebook markdown cells.
   The ruff rules live in `pyproject.toml`; notebooks are exempt from a few of them, each
   with a comment saying why. Let the hooks wrap prose; don't hand-wrap.
