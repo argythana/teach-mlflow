@@ -3,8 +3,11 @@
 Re-running a notebook changes timings, scores and counts, and nothing else catches prose
 that still quotes the old run. Each claim below pairs a quoted fragment of a markdown
 cell with patterns that must appear in the same notebook's stored outputs. A second test
-finds every markdown sentence that quotes a stored run with a number and fails unless a
-claim covers it, so new quoted results cannot slip in untested.
+finds markdown sentences that quote a result and fails unless a claim covers them. It
+detects two shapes: a sentence that names the stored run ("stored run", "run saved",
+"example run", ...) and contains a number, and a sentence that gives a metric's value
+("`relevance_to_query/mean` is **0.67**"). A quoted result phrased any other way is not
+detected, so add a claim for it by hand.
 
 When a re-run changes a quoted number, update the prose and the claim together.
 """
@@ -21,15 +24,18 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 # Sentences that present a number as coming from the run stored in the notebook. A dot
-# followed by a digit is a decimal point, not the end of the sentence.
-_SENTENCE_PART = r"(?:[^.\n]|\.(?=\d))*"
+# followed by a digit is a decimal point, not the end of the sentence, and a single
+# newline is the formatter's soft line break inside a sentence.
+_SENTENCE_PART = r"(?:[^.\n]|\.(?=\d)|\n(?!\n))*"
 QUOTES_A_RUN = re.compile(
     _SENTENCE_PART
-    + r"(stored run|run stored|saved here|run saved|example run)"
-    + _SENTENCE_PART
-    + r"\d"
+    + r"(?:stored run|run stored|saved here|run saved|example run)"
     + _SENTENCE_PART,
     re.IGNORECASE,
+)
+# Sentences that state a logged metric's value, such as "`concise/mean` is also 0.67".
+QUOTES_A_METRIC = re.compile(
+    _SENTENCE_PART + r"`[\w./]+/(?:mean|value)`[^.\n]{0,40}?\d\.\d" + _SENTENCE_PART
 )
 
 
@@ -43,36 +49,36 @@ class Claim:
 CLAIMS = (
     Claim(
         "src/ml/i_system_metrics.ipynb",
-        "(9.5 s vs 27.4 s)",
-        (r"GPU train: 9\.5s", r"CPU train: 27\.4s"),
+        "(8.6 s vs 37.7 s)",
+        (r"GPU train: 8\.6s", r"CPU train: 37\.7s"),
     ),
     Claim(
         "src/ml/i_system_metrics.ipynb",
-        "98% vs 73%, about 1.8 GB vs 1.2 GB",
+        "99% vs 64%, about 1.7 GB vs 1.2 GB",
         (
-            r"gpu_0_utilization_percentage\s+98\.0",
-            r"gpu_0_utilization_percentage\s+73\.0",
-            r"gpu_0_memory_usage_megabytes\s+18\d\d\.\d",
+            r"gpu_0_utilization_percentage\s+99\.0",
+            r"gpu_0_utilization_percentage\s+64\.0",
+            r"gpu_0_memory_usage_megabytes\s+1[67]\d\d\.\d",
             r"gpu_0_memory_usage_megabytes\s+1[12]\d\d\.\d",
         ),
     ),
     Claim(
         "src/ml/i_system_metrics.ipynb",
-        "(stored run: 89% vs 95%)",
+        "(stored run: 92% vs 97%)",
         (
-            r"cpu_utilization_percentage\s+88\.\d",
-            r"cpu_utilization_percentage\s+95\.\d",
+            r"cpu_utilization_percentage\s+91\.\d",
+            r"cpu_utilization_percentage\s+96\.\d",
         ),
     ),
     Claim(
         "src/ml/i_system_metrics.ipynb",
-        "(28 samples for the CPU run, 11 for the GPU run)",
-        (r"\(28 samples\)", r"\(11 samples\)"),
+        "(37 samples for the CPU run, 10 for the GPU run)",
+        (r"\(37 samples\)", r"\(10 samples\)"),
     ),
     Claim(
         "src/ml/i_system_metrics.ipynb",
-        "in the stored run its GPU peak reached 73%",
-        (r"gpu_0_utilization_percentage\s+73\.0",),
+        "in the stored run its GPU peak reached 64%",
+        (r"gpu_0_utilization_percentage\s+64\.0",),
     ),
     Claim(
         "src/gen_ai/e_prompt_registry.ipynb",
@@ -93,7 +99,22 @@ CLAIMS = (
     Claim(
         "src/gen_ai/i_rag_capstone.ipynb",
         "the judge scored all 8 traces",
-        (r"\d+/8 \[",),
+        (r"rows the judge couldn't score: 0 of 8",),
+    ),
+    Claim(
+        "src/ml/c_logging_plots.ipynb",
+        "in the run saved here it is the deepest of the five (`max_depth=29`)",
+        (r"Best params: \{'rf_max_depth': 29,",),
+    ),
+    Claim(
+        "src/gen_ai/c_genai_evaluation.ipynb",
+        "`relevance_to_query/mean` is **0.67**",
+        (r"'relevance_to_query/mean': np\.float64\(0\.666",),
+    ),
+    Claim(
+        "src/gen_ai/c_genai_evaluation.ipynb",
+        "`concise/mean` is also 0.67",
+        (r"'concise/mean': np\.float64\(0\.666",),
     ),
 )
 # Sentences that match QUOTES_A_RUN but quote no stored output, with the reason.
@@ -153,8 +174,13 @@ def test_every_quoted_run_result_has_a_claim() -> None:
     uncovered = []
     for notebook in notebooks:
         for cell in _markdown(notebook):
-            for match in QUOTES_A_RUN.finditer(cell):
-                sentence = match.group(0)
+            run_sentences = [m.group(0) for m in QUOTES_A_RUN.finditer(cell)]
+            for sentence in [
+                *(
+                    s for s in run_sentences if re.search(r"\d", s)
+                ),  # the number may come first
+                *(m.group(0) for m in QUOTES_A_METRIC.finditer(cell)),
+            ]:
                 covered = any(
                     c.notebook == notebook and c.prose in sentence for c in CLAIMS
                 ) or any(
