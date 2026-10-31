@@ -171,7 +171,7 @@ The `mlflow` command comes from the venv that `uv sync` created, so activate it 
 new terminal first, or run `uv run mlflow ui …` instead.
 
 Leave it running and open the UI at the matching address (e.g. <http://127.0.0.1:5000>).
-In MLflow 3 this creates a `mlflow.db` (the SQLite backend store) in the folder you
+Since MLflow 3.7 this creates a `mlflow.db` (the SQLite backend store) in the folder you
 started the server from, and an `mlartifacts/` directory there once a notebook logs its
 first artifact. Start it from `src/` every time so they stay in one place, next to the
 notebooks; the notebooks' on-disk examples assume that layout. Both are per-developer
