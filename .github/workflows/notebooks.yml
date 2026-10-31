@@ -1,19 +1,29 @@
-# Executes every notebook in src/basics/ and src/ml/ top to bottom, so each
-# push to main proves the offline half of the course still runs. Any cell error
-# fails the job. The workflow uses no credentials of any kind.
+# Executes the notebooks in src/basics/ and src/ml/ top to bottom, so a push to
+# main proves the offline half of the course still runs. Any cell error fails
+# the job. The workflow uses no credentials of any kind.
 #
-# A separate lint job runs `ruff check .` and `ruff format --check .` at the
-# repo root, with the ruff version pinned in uv.lock and the rules in
-# pyproject.toml: it lints and format-checks the notebooks' code cells in src/
-# and the Python files in tools/ and tests/. The same job type-checks tools/
-# and tests/ with mypy in strict mode (configured under [tool.mypy] in
-# pyproject.toml, version pinned in uv.lock); the notebooks are not
-# type-checked.
+# Only notebooks whose code changed are executed (tools/select_notebooks.py): a
+# code cell added, removed, reordered or edited since the push's previous commit
+# or the pull request's base. Markdown and stored outputs do not count, since
+# re-running would test the same code. ml/f_model_registry.ipynb also runs
+# whenever ml/g_model_serving.ipynb does, because the model server g_ talks to
+# serves the alias f_ sets. Every notebook runs on a manual run, when the base
+# commit is unknown, and when pyproject.toml, uv.lock or this file changed. When
+# nothing is selected, the execute job is skipped.
+#
+# A separate lint job runs every hook in .pre-commit-config.yaml on all files
+# with prek, with the tool versions pinned in uv.lock: ruff format and check on
+# the notebooks' code cells and on tools/ and tests/, mypy in strict mode on
+# tools/ and tests/ (configured under [tool.mypy] in pyproject.toml; the
+# notebooks are not type-checked), mdformat on the Markdown docs, the notebook
+# markdown wrapper, detect-private-key and the file checks. The gitleaks hook
+# scans staged changes, which a CI checkout has none of, so the job skips it and
+# runs the same gitleaks version over the full git history instead.
 #
 # A separate test job runs pytest on tests/, offline and with no models or
 # servers. It tests tools/wrap_notebook_markdown.py, the pre-commit formatter
 # for notebook markdown (idempotent; code cells and outputs untouched; no
-# breaks inside code spans or links), and checks the stored outputs of every
+# breaks inside code spans or links), and tools/select_notebooks.py. It checks the stored outputs of every
 # notebook in src/, including the ones this workflow cannot execute: no error
 # outputs, execution counts all empty or exactly 1..N in cell order, and no
 # home-directory paths; tests/test_quoted_results.py checks that numbers the
@@ -69,14 +79,20 @@ concurrency:
 
 jobs:
   lint:
-    name: Lint with ruff and type-check with mypy
+    name: Pre-commit hooks and secret scan
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      GITLEAKS_VERSION: "8.30.1"
+      # sha256 of gitleaks_8.30.1_linux_x64.tar.gz, from the release's checksums file.
+      GITLEAKS_SHA256: "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
     steps:
+      # The full history, so gitleaks can scan every commit.
       - name: Check out the repository
         uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Install Python 3.14
         uses: actions/setup-python@v7.0.0
@@ -88,24 +104,38 @@ jobs:
         with:
           enable-cache: true
 
-      # --only-dev installs just the dev group (ruff, mypy) from uv.lock, not the
-      # course's runtime dependencies. At the repo root ruff covers the
-      # notebooks in src/ and the Python files in tools/ and tests/.
-      - name: Run ruff check
-        run: uv run --locked --only-dev ruff check .
+      # --only-dev installs just the dev group (prek, ruff, mypy, mdformat,
+      # pytest) from uv.lock, not the course's runtime dependencies. mypy needs
+      # pytest, which the tests import.
+      - name: Install the dev tools from uv.lock
+        run: uv sync --locked --only-dev
 
-      - name: Run ruff format --check
-        if: ${{ !cancelled() }}
-        run: uv run --locked --only-dev ruff format --check .
+      - name: Cache the pre-commit hook environments
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/.cache/prek
+          key: prek-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
 
-      # mypy checks the files listed in pyproject.toml (tools/ and tests/);
-      # pytest, which the tests import, is in the same dev group.
-      - name: Run mypy
+      # UV_NO_SYNC keeps each hook's `uv run` on the dev-only environment above
+      # instead of installing the course's dependencies. A hook that would
+      # change a file fails the step and prints the diff.
+      - name: Run every pre-commit hook on all files
+        env:
+          SKIP: gitleaks
+          UV_NO_SYNC: "1"
+        run: uv run prek run --all-files --show-diff-on-failure
+
+      - name: Scan the full git history for secrets
         if: ${{ !cancelled() }}
-        run: uv run --locked --only-dev mypy
+        run: |
+          archive="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -fsSLO "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${archive}"
+          echo "${GITLEAKS_SHA256}  ${archive}" | sha256sum -c -
+          tar -xzf "$archive" -C "$RUNNER_TEMP" gitleaks
+          "$RUNNER_TEMP/gitleaks" git --redact --verbose .
 
   test:
-    name: Test the formatter and stored notebooks
+    name: Test the tools and stored notebooks
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -129,13 +159,47 @@ jobs:
       - name: Run pytest
         run: uv run --locked --only-dev pytest
 
+  select:
+    name: Select the notebooks whose code changed
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      notebooks: ${{ steps.select.outputs.notebooks }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      # The checkout holds only the tested commit; fetch the base to diff against.
+      # If it cannot be fetched, the selector runs every notebook.
+      - name: Select notebooks
+        id: select
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          args=()
+          if [ "$EVENT" = workflow_dispatch ]; then args+=(--all); fi
+          if [ -n "$BASE" ] && [ "$BASE" != 0000000000000000000000000000000000000000 ]; then
+            git fetch --no-tags --depth=1 origin "$BASE" || echo "Could not fetch the base commit $BASE"
+          fi
+          selected=$(python3 tools/select_notebooks.py "${args[@]}" --base "$BASE" --head HEAD \
+            --always pyproject.toml --always uv.lock --always .github/workflows/notebooks.yml \
+            --requires g_model_serving.ipynb=f_model_registry.ipynb \
+            src/basics src/ml)
+          echo "notebooks=$selected" >> "$GITHUB_OUTPUT"
+
   execute:
     name: Execute basics and ml notebooks
+    needs: select
+    if: ${{ needs.select.outputs.notebooks != '[]' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
       # Seconds a single cell may run; the XGBoost cells in ml/i_ are the slowest.
       CELL_TIMEOUT: "900"
+      SELECTED: ${{ needs.select.outputs.notebooks }}
     steps:
       - name: Check out the repository
         uses: actions/checkout@v7.0.1
@@ -187,17 +251,17 @@ jobs:
             echo "MLflow tracking server is up on port $port"
           done
 
-      - name: Execute src/basics notebooks
+      - name: Execute the selected src/basics notebooks
         working-directory: src/basics
         run: |
-          for nb in *.ipynb; do
+          for nb in $(jq -r '.[] | select(startswith("src/basics/")) | ltrimstr("src/basics/")' <<< "$SELECTED"); do
             echo "==> src/basics/$nb"
             jupyter nbconvert --to notebook --execute \
               --ExecutePreprocessor.timeout="$CELL_TIMEOUT" \
               --output-dir "$RUNNER_TEMP/executed/basics" "$nb"
           done
 
-      - name: Execute src/ml notebooks
+      - name: Execute the selected src/ml notebooks
         if: ${{ !cancelled() && steps.servers.outcome == 'success' }}
         working-directory: src/ml
         run: |
@@ -234,7 +298,7 @@ jobs:
             return 1
           }
 
-          for nb in *.ipynb; do
+          for nb in $(jq -r '.[] | select(startswith("src/ml/")) | ltrimstr("src/ml/")' <<< "$SELECTED"); do
             if [ "$nb" = g_model_serving.ipynb ]; then start_model_server; fi
             echo "==> src/ml/$nb"
             jupyter nbconvert --to notebook --execute \
