@@ -102,7 +102,7 @@ cd src/
 mlflow ui --host 127.0.0.1 --port 5000   # 5001 for ml/ and gen_ai/
 ```
 
-In MLflow 3+ this creates `mlflow.db` (SQLite backend store) and an `mlartifacts/`
+Since MLflow 3.7 this creates `mlflow.db` (SQLite backend store) and an `mlartifacts/`
 directory in the cwd — always start the server from `src/` so these land in one
 predictable place; README.md and every notebook's prerequisites say the same. The
 advanced tracks share port 5001 on purpose: the model registry across `ml/` and the

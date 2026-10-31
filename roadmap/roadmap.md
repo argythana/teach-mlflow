@@ -132,9 +132,10 @@ basics/ (a_setup → b_tracking_quickstart)
 - **Deployment targets deep-dive** — SageMaker / Kubernetes / Modal.
 - **A `databricks/` track (managed-only features).** `g_` is where the repo first meets
   the OSS ceiling: the **Review App** + **labeling sessions** (human-in-the-loop UI),
-  **scheduled scorers** (`ScorerScheduleConfig`, auto-monitoring on live traffic), Unity
-  Catalog governance, and managed serving endpoints all need a **Databricks workspace**.
-  The repo so far is fully OSS (Databricks features flagged as managed *alternatives*,
-  never required). If we cover them, they'd form a separate, clearly-prerequisited
-  `databricks/` folder — its bar (a workspace) sits above this repo's "students with no
-  budget" audience, so it stays optional.
+  the `ScorerScheduleConfig` scheduled-scorer API, Unity Catalog governance, and managed
+  serving endpoints all need a **Databricks workspace** (open-source MLflow 3.12 has its
+  own `scorer.register()` / `scorer.start()` for scoring a sample of live traces, which
+  `g_` mentions). The repo so far is fully OSS (Databricks features flagged as managed
+  *alternatives*, never required). If we cover them, they'd form a separate,
+  clearly-prerequisited `databricks/` folder — its bar (a workspace) sits above this
+  repo's "students with no budget" audience, so it stays optional.
