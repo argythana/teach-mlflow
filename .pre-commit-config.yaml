@@ -8,24 +8,33 @@
 #   git commit --no-verify                     # skip ALL hooks for this commit (alias: -n)
 #   SKIP=ruff-format-nb git commit -m "..."    # skip ONE hook by id
 #   SKIP=ruff-format-nb,wrap-notebook-markdown git commit -m "..."   # skip several (comma-separated)
-# Hook ids available to SKIP: check-added-large-files, check-json, check-toml,
-#   check-yaml, check-merge-conflict, end-of-file-fixer, trailing-whitespace,
+# Hook ids available to SKIP: gitleaks, detect-private-key, check-added-large-files,
+#   check-json, check-toml, check-yaml, check-merge-conflict, end-of-file-fixer, trailing-whitespace,
 #   mdformat, ruff-format-nb, ruff-check-nb, ruff-format-py, ruff-check-py, mypy,
 #   wrap-notebook-markdown.
 #
 # The repo is almost entirely Jupyter notebooks (code in code cells, prose in
 # markdown cells) plus a few Markdown docs and the Python in tools/ and tests/ —
-# the hooks are scoped accordingly. CI (.github/workflows/notebooks.yml) runs the
-# same ruff checks over the whole repo, and the same mypy check.
+# the hooks are scoped accordingly. CI (.github/workflows/notebooks.yml) runs every
+# hook here on all files except gitleaks, which only scans staged changes; CI runs
+# the same gitleaks version over the full git history instead.
 default_language_version:
   python: "python3"
 default_stages: [pre-commit]
 fail_fast: false # run every hook so one failure doesn't hide the rest
 
 repos:
+  - repo: "https://github.com/gitleaks/gitleaks"
+    rev: "v8.30.1"
+    hooks:
+      # An Azure/OpenAI key pasted into a cell or printed in an output must never
+      # reach GitHub. Scans the staged changes, so it checks each commit.
+      - id: "gitleaks"
+
   - repo: "https://github.com/pre-commit/pre-commit-hooks"
     rev: "v6.0.0"
     hooks:
+      - id: "detect-private-key"
       - id: "check-added-large-files"
         args: ["--maxkb=1024"]
       - id: "check-json" # .ipynb files are JSON — catches a corrupted notebook

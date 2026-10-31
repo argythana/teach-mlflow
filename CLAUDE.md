@@ -83,9 +83,10 @@ editorial principles. The `mlflow-tutorial-improve` skill at
   - Commit `uv.lock` along with `pyproject.toml` changes.
 - **Formatting and linting run as pre-commit hooks through `prek`**
   (`.pre-commit-config.yaml`; wire the git hook once with `uv run prek install`, or run
-  `uv run prek run --all-files`): `mdformat --wrap 88` for the Markdown docs,
-  `ruff format` + `ruff check --fix` for notebook code cells and for the Python files in
-  `tools/` and `tests/`, `mypy` (strict) for `tools/` and `tests/`, and
+  `uv run prek run --all-files`): `gitleaks` and `detect-private-key` against committed
+  secrets, `mdformat --wrap 88` for the Markdown docs, `ruff format` +
+  `ruff check --fix` for notebook code cells and for the Python files in `tools/` and
+  `tests/`, `mypy` (strict) for `tools/` and `tests/`, and
   `tools/wrap_notebook_markdown.py --width 120 --justify` for notebook markdown cells.
   The ruff rules live in `pyproject.toml`; notebooks are exempt from a few of them, each
   with a comment saying why. Let the hooks wrap prose; don't hand-wrap.
@@ -155,18 +156,21 @@ tracking server.) The `basics/` and `ml/` tracks don't need Ollama.
     tracing, LLM-as-judge evaluation, a LangChain agent, the prompt registry, serving,
     feedback and monitoring, DSPy prompt optimization, and a RAG capstone.
   - `src/setup/` — one-time setup guides outside the reading order (`a_ollama_setup`).
-- `tests/` — offline pytest suite: the markdown formatter's guarantees, a structural
-  check of every stored notebook (no error outputs, execution counts in order, no
-  machine paths), and `test_quoted_results.py`, which checks numbers the prose quotes
-  from a stored run against that run's outputs.
+- `tests/` — offline pytest suite: the markdown formatter's guarantees, the notebook
+  selector's rules, a structural check of every stored notebook (no error outputs,
+  execution counts in order, no machine paths), and `test_quoted_results.py`, which
+  checks numbers the prose quotes from a stored run against that run's outputs.
 - `tools/` — repo maintenance scripts: `wrap_notebook_markdown.py`, the
-  notebook-markdown formatter the pre-commit hook runs.
-- `.github/workflows/notebooks.yml` — CI that lints and format-checks the repo with
-  ruff, type-checks `tools/` and `tests/` with mypy, runs the `tests/` suite and
-  executes the `basics/` and `ml/` notebooks on every push to `main`.
+  notebook-markdown formatter the pre-commit hook runs, and `select_notebooks.py`, which
+  picks the notebooks a CI run executes: those whose code cells changed, plus their
+  prerequisites, or all of them when the dependencies or the workflow changed.
+- `.github/workflows/notebooks.yml` — CI that runs every pre-commit hook on all files,
+  scans the full git history with gitleaks, runs the `tests/` suite and executes the
+  `basics/` and `ml/` notebooks whose code changed, on every push to `main`.
 - `.github/workflows/genai-notebooks.yml` — CI that installs Ollama on the runner and
-  executes `src/setup/` and the `gen_ai/` notebooks on the local models, weekly and on
-  pushes that touch them.
+  executes the `src/setup/` and `gen_ai/` notebooks on the local models, one parallel
+  job per notebook: all of them weekly, and on pushes that touch them only those whose
+  code changed.
 - `roadmap/` — the master roadmap summary (`roadmap.md`) and the record of how the GenAI
   track was built (`plan.md`).
 - `README.md` — audience, motivation, and setup for readers of the repo.
