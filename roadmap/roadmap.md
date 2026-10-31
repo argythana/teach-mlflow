@@ -108,13 +108,13 @@ notebook keeps a hosted-model (Azure/OpenAI) swap as an optional section.
 - **LlamaIndex / Milvus RAG — built as `i_rag_capstone`** (the GenAI finale). Resolved
   the "full notebook vs `b_` appendix" question by making it the capstone: local
   `nomic-embed-text` embeddings + **Milvus Lite** + LlamaIndex,
-  traced/evaluated/governed/served end to end, with the `c_` retrieval scorers finally
-  grading a real retriever.
+  traced/evaluated/governed/served end to end, with a retrieval scorer
+  (`RetrievalGroundedness`) grading a real retriever for the first time in the track.
 
-**Editorial stance** (per the `mlflow-tutorial-improve` skill): lead with the *problem*
-(you can't put a number on "is this answer good?" → LLM-as-judge; you can't see inside a
-chain → tracing), define GenAI jargon once (span, trace, scorer, judge, prompt version),
-and cross-link the `ml/` analog rather than re-teaching shared MLflow concepts.
+**Editorial stance:** lead with the *problem* (you can't put a number on "is this answer
+good?" → LLM-as-judge; you can't see inside a chain → tracing), define GenAI jargon once
+(span, trace, scorer, judge, prompt version), and cross-link the `ml/` analog rather
+than re-teaching shared MLflow concepts.
 
 ## Sequencing
 

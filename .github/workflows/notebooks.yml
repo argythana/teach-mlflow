@@ -16,7 +16,8 @@
 # breaks inside code spans or links), and checks the stored outputs of every
 # notebook in src/, including the ones this workflow cannot execute: no error
 # outputs, execution counts all empty or exactly 1..N in cell order, and no
-# home-directory paths.
+# home-directory paths; tests/test_quoted_results.py checks that numbers the
+# prose quotes from a stored run match that run's outputs.
 #
 # Ports, as the notebooks hard-code them:
 #   5000  tracking server for src/basics/
